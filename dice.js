@@ -1,11 +1,13 @@
 // ===============================
-// RolEnRoll Dice System Logic (browser version)
+// RolEnRoll Dice System Logic – Browser version
 // ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("dice-form");
-  form.addEventListener("submit", onSubmit);
+  if (form) form.addEventListener("submit", onSubmit);
 });
+
+// ------ helpers from your Foundry code ------
 
 // Keep value between min and max
 function clamp(v, min, max) {
@@ -15,13 +17,10 @@ function clamp(v, min, max) {
 }
 
 // Build the 6 faces for a single die configuration.
-// All dice start as: ["1", "", "", "", "", "R"]
 // kind = "normal" | "adv" | "neg"
-// adv: plusCount = 1..4   → "+" on that many blank faces
-// neg: minusCount = 1..4  → "-" on that many blank faces
 function buildDieFaces(config = {}) {
   const kind = config.kind ?? "normal";
-  const faces = ["1", "", "", "", "", "R"]; // index 0..5 (die sides 1..6)
+  const faces = ["1", "", "", "", "", "R"]; // sides 1..6
 
   if (kind === "adv") {
     let plusCount = config.plusCount ?? 1;
@@ -30,7 +29,7 @@ function buildDieFaces(config = {}) {
     }
     plusCount = clamp(plusCount, 1, 4);
     for (let i = 0; i < plusCount; i++) {
-      faces[1 + i] = "+"; // fill positions 2–5
+      faces[1 + i] = "+"; // positions 2–5
     }
   } else if (kind === "neg") {
     let minusCount = config.minusCount ?? 1;
@@ -39,7 +38,7 @@ function buildDieFaces(config = {}) {
     }
     minusCount = clamp(minusCount, 1, 4);
     for (let i = 0; i < minusCount; i++) {
-      faces[1 + i] = "-"; // fill positions 2–5
+      faces[1 + i] = "-"; // positions 2–5
     }
   }
 
@@ -56,7 +55,7 @@ function faceForRoll(config, value) {
 // Score faces using your rules:
 // - "1" = 1 point
 // - "R" = 1 point + 1 reroll
-// - "+" / "-" only change final total if there is at least 1 base point
+// - "+" / "-" only affect score if basePoints > 0
 // - blank = 0
 function scoreFaces(faces) {
   let basePoints = 0;
@@ -86,16 +85,13 @@ function scoreFaces(faces) {
   return { basePoints, plusCount, minusCount, rerollCount, total };
 }
 
-// Simple d6
+// Simple d6 roll
 function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-// Roll a pool of RolEnRoll dice with rerolls (browser version)
-// dice = array of configs:
-//   { kind: "normal" }
-//   { kind: "adv", plusCount: 2 }
-//   { kind: "neg", minusCount: 1 }
+// ------ main pool roller (browser) ------
+
 function rollRolenrollPoolBrowser(dice) {
   if (!Array.isArray(dice) || dice.length === 0) {
     dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
@@ -136,9 +132,10 @@ function rollRolenrollPoolBrowser(dice) {
   const rerollFaces = rerollResults.map(r => r.face);
   const allFaces = baseFaces.concat(rerollFaces);
 
+  // Use your scoring for final total
   const scoring = scoreFaces(allFaces);
 
-  // Split base vs reroll for your summary
+  // For the detailed summary you wanted:
   const basedScore = baseFaces.reduce(
     (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
     0
@@ -195,8 +192,8 @@ function rollRolenrollPoolBrowser(dice) {
   };
 }
 
-// Parse "Special dice" field: aX / nY just like your /rr command
-// e.g. "a1, n2" → [{kind:"adv", plusCount:1}, {kind:"neg", minusCount:2}]
+// ------ parse "Special dice" (a / n) like /rr ------
+
 function parseSpecialDice(str) {
   const configs = [];
   const trimmed = str.trim();
@@ -225,11 +222,15 @@ function parseSpecialDice(str) {
   return configs;
 }
 
-// Handle form submit
+// ------ form handler ------
+
 function onSubmit(e) {
   e.preventDefault();
 
-  const totalInput = document.getElementById("total-dice");
+  const totalInput =
+    document.getElementById("total-dice") ||
+    document.getElementById("total"); // just in case
+
   const specialInput = document.getElementById("special");
 
   const total = parseInt(totalInput.value || "0", 10);
@@ -265,9 +266,11 @@ function onSubmit(e) {
     minusTokens
   } = rollRolenrollPoolBrowser(dice);
 
-  document.getElementById("result").innerHTML = html;
+  // Show dice faces
+  const resultDiv = document.getElementById("result");
+  if (resultDiv) resultDiv.innerHTML = html;
 
-  // Summary
+  // Fill summary
   document.getElementById("based-score").textContent = basedScore;
   document.getElementById("rr-count").textContent = rerollCount;
   document.getElementById("rr-points").textContent = rerollPoints;
