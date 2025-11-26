@@ -90,51 +90,46 @@ function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-// ---------- main pool roller ----------
+// ---------- main pool roller with multi-round display ----------
 
 function rollRolenrollPoolBrowser(dice) {
   if (!Array.isArray(dice) || dice.length === 0) {
     dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
   }
 
-  const baseResults = [];
-  const rerollResults = [];
+  // rounds[0] = first roll, rounds[1] = reroll from R in round 0, etc.
+  const rounds = [];
 
-  let pending = dice.map(d => ({ config: { ...d }, isReroll: false }));
+  let current = dice.map(config => ({ config }));
   let safety = 0;
 
-  // Each "R" creates another die of the same config
-  while (pending.length > 0 && safety < 100) {
+  while (current.length > 0 && safety < 100) {
     safety++;
+
+    const thisRound = [];
     const next = [];
 
-    for (const item of pending) {
-      const { config, isReroll } = item;
+    for (const { config } of current) {
       const value = rollD6();
       const face = faceForRoll(config, value);
-      const rec = { config, roll: value, face, isReroll };
-
-      if (isReroll) {
-        rerollResults.push(rec);
-      } else {
-        baseResults.push(rec);
-      }
+      thisRound.push({ config, roll: value, face });
 
       if (face === "R") {
-        next.push({ config: { ...config }, isReroll: true }); // reroll same die
+        // R → another die of the same config in the next round
+        next.push({ config: { ...config } });
       }
     }
 
-    pending = next;
+    rounds.push(thisRound);
+    current = next;
   }
 
-  const baseFaces = baseResults.map(r => r.face);
-  const rerollFaces = rerollResults.map(r => r.face);
+  const baseFaces = rounds[0] ? rounds[0].map(r => r.face) : [];
+  const rerollFaces = rounds.slice(1).flat().map(r => r.face);
   const allFaces = baseFaces.concat(rerollFaces);
 
   const scoring = scoreFaces(allFaces);
 
-  // For your summary:
   const basedScore = baseFaces.reduce(
     (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
     0
@@ -147,25 +142,30 @@ function rollRolenrollPoolBrowser(dice) {
   const minusTokens = allFaces.filter(f => f === "-").length;
   const rerollCount = allFaces.filter(f => f === "R").length;
 
-  // ---- Build HTML: one row for initial roll, one for rerolls ----
-  const baseHtml = baseFaces.map(faceToDieHtml).join("");
-  const rerollHtml = rerollFaces.map(faceToDieHtml).join("");
-
+  // ---- Build HTML: one row per round ----
   let html = `
 <div class="role-roll-chat">
   <div class="role-roll-header"><strong>Role&amp;Roll Dice Pool</strong></div>
-  <div class="role-roll-dice-row">
-    ${baseHtml}
-  </div>
 `;
 
-  if (rerollResults.length > 0) {
+  rounds.forEach((round, idx) => {
+    if (!round.length) return;
+    const facesHtml = round.map(r => faceToDieHtml(r.face)).join("");
+
+    let label = "";
+    if (idx === 0) {
+      // first roll (no text needed, but you can add "Roll 1" if you like)
+      label = "";
+    } else {
+      label = `<em>(reroll ${idx})</em>&nbsp;`;
+    }
+
     html += `
-  <div class="role-roll-dice-row" style="margin-top:4px;">
-    <em>(reroll)</em>&nbsp;${rerollHtml}
+  <div class="role-roll-dice-row">
+    ${label}${facesHtml}
   </div>
 `;
-  }
+  });
 
   html += `</div>`;
 
@@ -282,7 +282,7 @@ function onSubmit(e) {
   const resultDiv = document.getElementById("result");
   if (resultDiv) resultDiv.innerHTML = html;
 
-  // Fill summary (only if those elements exist)
+  // Fill summary
   const elBase = document.getElementById("based-score");
   if (elBase) elBase.textContent = basedScore;
 
