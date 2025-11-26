@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (form) form.addEventListener("submit", onSubmit);
 });
 
-// ------ helpers from your Foundry code ------
+// ---------- helpers from your Foundry logic ----------
 
 // Keep value between min and max
 function clamp(v, min, max) {
@@ -90,7 +90,7 @@ function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-// ------ main pool roller (browser) ------
+// ---------- main pool roller ----------
 
 function rollRolenrollPoolBrowser(dice) {
   if (!Array.isArray(dice) || dice.length === 0) {
@@ -132,10 +132,9 @@ function rollRolenrollPoolBrowser(dice) {
   const rerollFaces = rerollResults.map(r => r.face);
   const allFaces = baseFaces.concat(rerollFaces);
 
-  // Use your scoring for final total
   const scoring = scoreFaces(allFaces);
 
-  // For the detailed summary you wanted:
+  // For your summary:
   const basedScore = baseFaces.reduce(
     (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
     0
@@ -148,38 +147,27 @@ function rollRolenrollPoolBrowser(dice) {
   const minusTokens = allFaces.filter(f => f === "-").length;
   const rerollCount = allFaces.filter(f => f === "R").length;
 
-  // Build HTML squares for each die face (like your Foundry chat)
-  const diceHtml = allFaces.map(f => {
-    let symbol = "&nbsp;";
-    let extraClass = "";
+  // ---- Build HTML: one row for initial roll, one for rerolls ----
+  const baseHtml = baseFaces.map(faceToDieHtml).join("");
+  const rerollHtml = rerollFaces.map(faceToDieHtml).join("");
 
-    if (f === "1") {
-      symbol = "●";            // 1 point = dot
-      extraClass = "role-roll-face-point";
-    } else if (f === "R") {
-      symbol = "Ⓡ";            // reroll symbol
-      extraClass = "role-roll-face-reroll";
-    } else if (f === "+") {
-      symbol = "+";            // advantage
-      extraClass = "role-roll-face-plus";
-    } else if (f === "-") {
-      symbol = "−";            // negative
-      extraClass = "role-roll-face-minus";
-    } else {
-      // blank
-      extraClass = "role-roll-face-blank";
-    }
-
-    return `<span class="role-roll-die ${extraClass}">${symbol}</span>`;
-  }).join("");
-
-  const html = `
+  let html = `
 <div class="role-roll-chat">
   <div class="role-roll-header"><strong>Role&amp;Roll Dice Pool</strong></div>
   <div class="role-roll-dice-row">
-    ${diceHtml}
+    ${baseHtml}
   </div>
-</div>`;
+`;
+
+  if (rerollResults.length > 0) {
+    html += `
+  <div class="role-roll-dice-row" style="margin-top:4px;">
+    <em>(reroll)</em>&nbsp;${rerollHtml}
+  </div>
+`;
+  }
+
+  html += `</div>`;
 
   return {
     html,
@@ -192,7 +180,31 @@ function rollRolenrollPoolBrowser(dice) {
   };
 }
 
-// ------ parse "Special dice" (a / n) like /rr ------
+// Render a single die as HTML span
+function faceToDieHtml(f) {
+  let symbol = "&nbsp;";
+  let extraClass = "";
+
+  if (f === "1") {
+    symbol = "●";            // 1 point = dot
+    extraClass = "role-roll-face-point";
+  } else if (f === "R") {
+    symbol = "Ⓡ";            // reroll symbol
+    extraClass = "role-roll-face-reroll";
+  } else if (f === "+") {
+    symbol = "+";            // advantage
+    extraClass = "role-roll-face-plus";
+  } else if (f === "-") {
+    symbol = "−";            // negative
+    extraClass = "role-roll-face-minus";
+  } else {
+    extraClass = "role-roll-face-blank"; // blank
+  }
+
+  return `<span class="role-roll-die ${extraClass}">${symbol}</span>`;
+}
+
+// ---------- parse "Special dice" like /rr (aX / nY) ----------
 
 function parseSpecialDice(str) {
   const configs = [];
@@ -205,13 +217,13 @@ function parseSpecialDice(str) {
     let m = token.match(/^a(\d+)$/i);
     if (m) {
       const plusCount = parseInt(m[1], 10);
-      configs.push({ kind: "adv", plusCount });
+      configs.push({ kind: "adv", plusCount }); // 1 ADV die with plusCount faces
       continue;
     }
     m = token.match(/^n(\d+)$/i);
     if (m) {
       const minusCount = parseInt(m[1], 10);
-      configs.push({ kind: "neg", minusCount });
+      configs.push({ kind: "neg", minusCount }); // 1 NEG die with minusCount faces
       continue;
     }
 
@@ -222,14 +234,14 @@ function parseSpecialDice(str) {
   return configs;
 }
 
-// ------ form handler ------
+// ---------- form handler ----------
 
 function onSubmit(e) {
   e.preventDefault();
 
   const totalInput =
     document.getElementById("total-dice") ||
-    document.getElementById("total"); // just in case
+    document.getElementById("total"); // fallback
 
   const specialInput = document.getElementById("special");
 
@@ -270,11 +282,22 @@ function onSubmit(e) {
   const resultDiv = document.getElementById("result");
   if (resultDiv) resultDiv.innerHTML = html;
 
-  // Fill summary
-  document.getElementById("based-score").textContent = basedScore;
-  document.getElementById("rr-count").textContent = rerollCount;
-  document.getElementById("rr-points").textContent = rerollPoints;
-  document.getElementById("plus-tokens").textContent = plusTokens;
-  document.getElementById("minus-tokens").textContent = minusTokens;
-  document.getElementById("total-points").textContent = scoring.total;
+  // Fill summary (only if those elements exist)
+  const elBase = document.getElementById("based-score");
+  if (elBase) elBase.textContent = basedScore;
+
+  const elRrCount = document.getElementById("rr-count");
+  if (elRrCount) elRrCount.textContent = rerollCount;
+
+  const elRrPoints = document.getElementById("rr-points");
+  if (elRrPoints) elRrPoints.textContent = rerollPoints;
+
+  const elPlus = document.getElementById("plus-tokens");
+  if (elPlus) elPlus.textContent = plusTokens;
+
+  const elMinus = document.getElementById("minus-tokens");
+  if (elMinus) elMinus.textContent = minusTokens;
+
+  const elTotal = document.getElementById("total-points");
+  if (elTotal) elTotal.textContent = scoring.total;
 }
