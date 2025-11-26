@@ -1,0 +1,38 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.field {
+  margin-bottom: 0.75rem;
+}
+
+label {
+  display: inline-block;
+  width: 180px;
+}
+
+button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+}
+
+#result {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  min-height: 2rem;
+  white-space: pre-wrap;
+}
+
+.total-highlight {
+  font-weight: bold;
+  color: red; /* your red “h / total point” highlight */
+  margin-top: 0.5rem;
+}
+
+.r-symbol {
+  font-weight: bold;
+}

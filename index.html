@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Role & Roll Dice Roller</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Role &amp; Roll Dice Roller</h1>
+
+  <form id="dice-form">
+    <div class="field">
+      <label for="total">Total dice:</label>
+      <input id="total" type="number" min="1" value="5" required>
+    </div>
+
+    <div class="field">
+      <label for="special">Special dice:</label>
+      <input
+        id="special"
+        type="text"
+        placeholder="e.g. a1, n1 (a = positive, n = negative)"
+      >
+    </div>
+
+    <p class="hint">
+      Examples:<br>
+      • <code>Total dice: 5</code> / <code>Special dice:</code> → 5 normal dice<br>
+      • <code>Total dice: 5</code> / <code>Special dice: a1, n1</code>
+      → 3 normal, 1 positive, 1 negative
+    </p>
+
+    <button type="submit">Roll</button>
+  </form>
+
+  <h2>Result</h2>
+  <div id="result"></div>
+  <h3>Total</h3>
+  <div id="total-result" class="total-highlight"></div>
+
+  <script src="dice.js"></script>
+</body>
+</html>
