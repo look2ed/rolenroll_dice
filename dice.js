@@ -156,7 +156,6 @@ function rollRolenrollPoolBrowser(dice) {
 
     let label = "";
     if (idx === 0) {
-      // first roll
       label = "";
     } else {
       label = `<em>(reroll ${idx})</em>&nbsp;`;
@@ -246,6 +245,8 @@ function onSubmit(e) {
     document.getElementById("total"); // fallback
 
   const specialInput = document.getElementById("special");
+  const successInput = document.getElementById("success");
+  const penaltyInput = document.getElementById("penalty");
 
   const total = parseInt(totalInput.value || "0", 10);
   if (isNaN(total) || total <= 0) {
@@ -270,6 +271,7 @@ function onSubmit(e) {
     return;
   }
 
+  // Roll dice
   const {
     html,
     scoring,
@@ -280,6 +282,20 @@ function onSubmit(e) {
     minusTokens
   } = rollRolenrollPoolBrowser(dice);
 
+  // Read success / penalty modifiers
+  let success = parseInt(successInput.value || "0", 10);
+  let penalty = parseInt(penaltyInput.value || "0", 10);
+  if (isNaN(success)) success = 0;
+  if (isNaN(penalty)) penalty = 0;
+  if (success < 0) success = 0;
+  if (penalty < 0) penalty = 0;
+
+  // Dice total from scoring.total, then apply stats
+  const diceTotal = scoring.total;
+  let finalTotal = diceTotal + success - penalty;
+  if (finalTotal < 0) finalTotal = 0;
+
+  // Show dice faces
   const resultDiv = document.getElementById("result");
   if (resultDiv) resultDiv.innerHTML = html;
 
@@ -299,6 +315,12 @@ function onSubmit(e) {
   const elMinus = document.getElementById("minus-tokens");
   if (elMinus) elMinus.textContent = minusTokens;
 
+  const elSucc = document.getElementById("stat-success");
+  if (elSucc) elSucc.textContent = success;
+
+  const elPen = document.getElementById("stat-penalty");
+  if (elPen) elPen.textContent = penalty;
+
   const elTotal = document.getElementById("total-points");
-  if (elTotal) elTotal.textContent = scoring.total;
+  if (elTotal) elTotal.textContent = finalTotal;
 }

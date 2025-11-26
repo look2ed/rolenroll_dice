@@ -30,6 +30,21 @@
       → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
     </p>
 
+    <div class="field">
+      <label for="success">Success:</label>
+      <input id="success" type="number" min="0" value="0">
+    </div>
+
+    <div class="field">
+      <label for="penalty">Penalty:</label>
+      <input id="penalty" type="number" min="0" value="0">
+    </div>
+
+    <p class="hint">
+      Success adds to total points, Penalty subtracts from total points.
+      (These are from stats / modifiers, not from the dice.)
+    </p>
+
     <button type="submit">Roll</button>
   </form>
 
@@ -48,6 +63,11 @@
       <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>
       &nbsp;
       <strong>- token(s) :</strong> <span id="minus-tokens">0</span>
+    </div>
+    <div>
+      <strong>Success :</strong> <span id="stat-success">0</span>
+      &nbsp;
+      <strong>Penalty :</strong> <span id="stat-penalty">0</span>
     </div>
     <div>
       <strong>Total point(s) :</strong>
