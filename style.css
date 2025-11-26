@@ -1,8 +1,18 @@
 body {
-  font-family: system-ui, sans-serif;
-  max-width: 600px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: 640px;
   margin: 2rem auto;
   padding: 0 1rem;
+  line-height: 1.4;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  margin-top: 1.5rem;
 }
 
 .field {
@@ -11,28 +21,92 @@ body {
 
 label {
   display: inline-block;
-  width: 180px;
+  width: 140px;
+}
+
+input[type="number"],
+input[type="text"] {
+  padding: 0.25rem 0.4rem;
+  min-width: 220px;
 }
 
 button {
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #555;
   margin-top: 0.5rem;
-  padding: 0.4rem 0.8rem;
 }
 
 #result {
   margin-top: 1rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ccc;
   min-height: 2rem;
-  white-space: pre-wrap;
+  background: #fafafa;
 }
 
 .total-highlight {
   font-weight: bold;
-  color: red; /* your red “h / total point” highlight */
-  margin-top: 0.5rem;
+  color: red; /* Total point(s) stands out */
+  font-size: 1.2rem;
 }
 
-.r-symbol {
+/* Dice display */
+.pool-block {
+  margin-bottom: 0.75rem;
+}
+
+.pool-title {
   font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.pool-subtitle {
+  font-size: 0.85rem;
+  margin: 0.1rem 0 0.25rem;
+}
+
+.dice-row {
+  margin-bottom: 0.25rem;
+}
+
+.die {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin: 0 4px 4px 0;
+  text-align: center;
+  line-height: 32px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.die-r {
+  border-style: double;
+}
+
+.die-plus {
+  /* visual hint for + token */
+  border-color: #1a7f37;
+}
+
+.die-minus {
+  /* visual hint for - token */
+  border-color: #cf222e;
+}
+
+.die-reroll {
+  box-shadow: 0 0 0 2px #888 inset;
+  opacity: 0.9;
+}
+
+#summary > div {
+  margin-bottom: 0.25rem;
 }

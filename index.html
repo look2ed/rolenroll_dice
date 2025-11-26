@@ -11,7 +11,7 @@
   <form id="dice-form">
     <div class="field">
       <label for="total">Total dice:</label>
-      <input id="total" type="number" min="1" value="5" required>
+      <input id="total" type="number" min="1" value="4" required>
     </div>
 
     <div class="field">
@@ -35,8 +35,25 @@
 
   <h2>Result</h2>
   <div id="result"></div>
-  <h3>Total</h3>
-  <div id="total-result" class="total-highlight"></div>
+
+  <h2>Summary</h2>
+  <div id="summary">
+    <div><strong>Based score :</strong> <span id="based-score">0</span></div>
+    <div>
+      <strong>R&amp;R :</strong>
+      <span id="rr-count">0</span>
+      (<span id="rr-points">0</span>)
+    </div>
+    <div>
+      <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>
+      &nbsp;
+      <strong>- token(s) :</strong> <span id="minus-tokens">0</span>
+    </div>
+    <div>
+      <strong>Total point(s) :</strong>
+      <span id="total-points" class="total-highlight">0</span>
+    </div>
+  </div>
 
   <script src="dice.js"></script>
 </body>
