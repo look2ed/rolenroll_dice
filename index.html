@@ -135,10 +135,7 @@
     </div>
   </div>
 
-  <h2>3D Dice</h2>
-  <div id="dice-3d-container"></div>
-
-
+  
   <h2>Result</h2>
   <div id="result"></div>
 
@@ -192,34 +189,3 @@
   <script src="dice.js"></script>
 </body>
 </html>
-
-<script src="dice.js"></script>
-
-<script type="module">
-  import DiceBox from "https://unpkg.com/@3d-dice/[email protected]/dist/dice-box.es.min.js";
-
-  // Create DiceBox instance in the #dice-3d-container
-  const diceBox = new DiceBox({
-    container: "#dice-3d-container",
-    assetPath: "assets/",  // with origin, this points to the CDN assets
-    origin: "https://unpkg.com/@3d-dice/[email protected]/dist/",
-    theme: "default",
-    scale: 5,              // 2–9; bigger number → bigger dice
-  });
-
-  // Initialize, then expose a helper function to the global window
-  diceBox.init().then(() => {
-    console.log("3D DiceBox ready");
-
-    // This function will be called from your dice.js
-    window.roll3dDice = async function(count) {
-      if (!count || count <= 0) return;
-      try {
-        // Roll `count` six-sided dice visually
-        await diceBox.roll(`${count}d6`);
-      } catch (err) {
-        console.error("3D dice roll failed:", err);
-      }
-    };
-  });
-</script>

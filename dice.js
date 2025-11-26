@@ -361,7 +361,7 @@ function onSubmit(e) {
     return;
   }
 
-  // Trigger 3D dice roll if available (visual only)
+// Trigger 3D dice roll if available (visual only)
   if (window.roll3dDice) {
     window.roll3dDice(total);
   }
