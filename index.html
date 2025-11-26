@@ -47,34 +47,92 @@
     <button type="submit">Roll</button>
   </form>
 
-  <!-- Hidden manual / guide -->
+  <!-- Manual / Guide with TH & EN pages -->
   <div id="manual-guide" class="manual hidden">
-    <h3>How to use</h3>
-    <ul>
-      <li><strong>Total dice</strong>: number of dice to roll in the first pool.</li>
-      <li>
-        <strong>Special dice</strong>: use
-        <code>aX</code> for one advantage die with X <code>+</code> faces,
-        <code>nY</code> for one negative die with Y <code>-</code> faces.<br>
-        Example: <code>a1,a1,n2</code> → 2 adv dice (+1 face), 1 neg die (2 - faces).<br>
-        The rest of the dice become normal dice so that the total equals <em>Total dice</em>.
-      </li>
-      <li>
-        <strong>Success</strong>: extra points from stats or abilities (added after dice total).
-      </li>
-      <li>
-        <strong>Penalty</strong>: penalty points from stats/effects (subtracted after dice total).
-      </li>
-      <li>
-        Dice faces: <code>●</code> = 1 point, <code>Ⓡ</code> = 1 point + reroll,
-        <code>+</code>/<code>-</code> are tokens that modify score only if there is at least 1 base point.
-      </li>
-    </ul>
-    <p>
-      Examples:<br>
-      • <code>Total dice: 5</code>, <code>Special dice:</code> → 5 normal dice<br>
-      • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code> → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
-    </p>
+    <div class="manual-header">
+      <h3>คู่มือ / Manual</h3>
+      <div class="manual-lang">
+        <button
+          type="button"
+          class="lang-btn active"
+          data-lang="th"
+        >TH</button>
+        <button
+          type="button"
+          class="lang-btn"
+          data-lang="en"
+        >EN</button>
+      </div>
+    </div>
+
+    <!-- Thai page (default visible) -->
+    <div id="manual-th" class="manual-page">
+      <ul>
+        <li><strong>Total dice</strong> : จำนวนเต๋าที่ทอยในชุดแรกทั้งหมด</li>
+        <li>
+          <strong>Special dice</strong> :
+          ใช้รูปแบบ <code>aX</code> สำหรับเต๋าบัฟที่มีหน้า <code>+</code> จำนวน X หน้า,
+          และ <code>nY</code> สำหรับเต๋าดีบัฟที่มีหน้า <code>-</code> จำนวน Y หน้า<br>
+          ตัวอย่าง <code>a1,a1,n2</code> → เต๋าบัฟ 2 ลูก (มี + อย่างละ 1 หน้า),
+          เต๋าดีบัฟ 1 ลูก (มี - 2 หน้า) ส่วนเต๋าที่เหลือจะเป็นเต๋าปกติ
+        </li>
+        <li>
+          <strong>Success</strong> : คะแนนจากค่าสเตตัส/ความสามารถ/การจ่าย Will Power
+          ที่นำไปบวกเพิ่มทีหลังจากผลเต๋า
+        </li>
+        <li>
+          <strong>Penalty</strong> : คะแนนติดลบจากสเตตัส/ดีบัฟ
+          ที่นำไปลบออกทีหลังจากผลเต๋า
+        </li>
+        <li>
+          <strong>หน้าลูกเต๋า</strong> : <code>●</code> = 1 แต้ม,
+          <code>Ⓡ</code> = 1 แต้ม + ทอยเต๋าเพิ่มอีก 1 ลูก,
+          <code>+</code> / <code>-</code> เป็นแต้มพิเศษที่นำไปบวก/ลบ
+          จากคะแนนรวม <em>ก็ต่อเมื่อ</em> มีแต้มพื้นฐานอย่างน้อย 1 แต้ม
+        </li>
+      </ul>
+      <p>
+        ตัวอย่าง:<br>
+        • <code>Total dice: 5</code> → เต๋าปกติ 5 ลูก <br>
+        • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
+        → เต๋าปกติ จำนวน 3 ลูก, เต๋าบัฟ (+ 1 หน้า) จำนวน 1 ลูก, เต๋าดีบัฟ (- 1 หน้า) จำนวน 1 ลูก
+      </p>
+    </div>
+
+    <!-- English page -->
+    <div id="manual-en" class="manual-page hidden">
+      <ul>
+        <li><strong>Total dice</strong>: number of dice rolled in the first pool.</li>
+        <li>
+          <strong>Special dice</strong>:
+          use <code>aX</code> for one advantage die with X <code>+</code> faces,
+          <code>nY</code> for one negative die with Y <code>-</code> faces.<br>
+          Example: <code>a1,a1,n2</code> → 2 adv dice (+1 face), 1 neg die (2 - faces).
+          The remaining dice become normal dice so that
+          the total equals <em>Total dice</em>.
+        </li>
+        <li>
+          <strong>Success</strong>: extra points from stats/abilities/Will Power, added
+          after the dice total.
+        </li>
+        <li>
+          <strong>Penalty</strong>: penalty points from stats/effects, subtracted
+          after the dice total.
+        </li>
+        <li>
+          <strong>Dice faces</strong>: <code>●</code> = 1 point,
+          <code>Ⓡ</code> = 1 point + 1 extra die of the same type next round,
+          <code>+</code>/<code>-</code> are tokens that modify the total
+          only if there is at least 1 base point.
+        </li>
+      </ul>
+      <p>
+        Examples:<br>
+        • <code>Total dice: 5</code> → 5 normal dice<br>
+        • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
+        → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
+      </p>
+    </div>
   </div>
 
   <h2>Result</h2>

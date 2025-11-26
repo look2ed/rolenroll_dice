@@ -130,6 +130,37 @@ button {
   font-size: 0.9rem;
 }
 
+.manual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.manual-lang {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.lang-btn {
+  border: 1px solid #aaa;
+  background: #f0f0f0;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.lang-btn.active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.manual-page {
+  margin-top: 0.25rem;
+}
+
 .manual h3 {
   margin-top: 0;
 }
@@ -137,3 +168,4 @@ button {
 .hidden {
   display: none;
 }
+

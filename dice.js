@@ -3,19 +3,55 @@
 // ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
+  // form submit
   const form = document.getElementById("dice-form");
   if (form) form.addEventListener("submit", onSubmit);
 
+  // help panel toggle
   const helpBtn = document.getElementById("help-toggle");
   const manual = document.getElementById("manual-guide");
 
   if (helpBtn && manual) {
     helpBtn.addEventListener("click", () => {
-      const isHidden = manual.classList.toggle("hidden"); // toggle class
-      helpBtn.setAttribute("aria-expanded", (!isHidden).toString());
+      const isNowHidden = manual.classList.toggle("hidden");
+      helpBtn.setAttribute("aria-expanded", (!isNowHidden).toString());
     });
   }
+
+  // language switching (TH / EN)
+  const langButtons = document.querySelectorAll(".lang-btn");
+  const pageTH = document.getElementById("manual-th");
+  const pageEN = document.getElementById("manual-en");
+
+  function setLang(lang) {
+    if (!pageTH || !pageEN) return;
+
+    if (lang === "th") {
+      pageTH.classList.remove("hidden");
+      pageEN.classList.add("hidden");
+    } else {
+      pageEN.classList.remove("hidden");
+      pageTH.classList.add("hidden");
+    }
+
+    langButtons.forEach(btn => {
+      const bLang = btn.getAttribute("data-lang");
+      if (bLang === lang) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+  }
+
+  langButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.getAttribute("data-lang") || "th";
+      setLang(lang);
+    });
+  });
+
+  // default language = TH
+  setLang("th");
 });
+
 
 
 // ---------- helpers from your Foundry logic ----------
