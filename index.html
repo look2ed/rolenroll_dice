@@ -10,8 +10,8 @@
 
   <form id="dice-form">
     <div class="field">
-      <label for="total">Total dice:</label>
-      <input id="total" type="number" min="1" value="4" required>
+      <label for="total-dice">Total dice:</label>
+      <input id="total-dice" type="number" min="1" value="5" required>
     </div>
 
     <div class="field">
@@ -27,7 +27,7 @@
       Examples:<br>
       • <code>Total dice: 5</code> / <code>Special dice:</code> → 5 normal dice<br>
       • <code>Total dice: 5</code> / <code>Special dice: a1, n1</code>
-      → 3 normal, 1 positive, 1 negative
+      → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
     </p>
 
     <button type="submit">Roll</button>
@@ -42,7 +42,7 @@
     <div>
       <strong>R&amp;R :</strong>
       <span id="rr-count">0</span>
-      (<span id="rr-points">0</span>)
+      (+<span id="rr-points">0</span>)
     </div>
     <div>
       <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>

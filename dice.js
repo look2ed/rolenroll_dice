@@ -1,7 +1,235 @@
-document.getElementById("dice-form").addEventListener("submit", function (e) {
+// ===============================
+// RolEnRoll Dice System Logic (browser version)
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("dice-form");
+  form.addEventListener("submit", onSubmit);
+});
+
+// Keep value between min and max
+function clamp(v, min, max) {
+  v = Number(v ?? 0);
+  if (Number.isNaN(v)) v = 0;
+  return Math.max(min, Math.min(max, v));
+}
+
+// Build the 6 faces for a single die configuration.
+// All dice start as: ["1", "", "", "", "", "R"]
+// kind = "normal" | "adv" | "neg"
+// adv: plusCount = 1..4   → "+" on that many blank faces
+// neg: minusCount = 1..4  → "-" on that many blank faces
+function buildDieFaces(config = {}) {
+  const kind = config.kind ?? "normal";
+  const faces = ["1", "", "", "", "", "R"]; // index 0..5 (die sides 1..6)
+
+  if (kind === "adv") {
+    let plusCount = config.plusCount ?? 1;
+    if (plusCount > 4) {
+      alert("Advantage die: max plus faces is 4. Using 4.");
+    }
+    plusCount = clamp(plusCount, 1, 4);
+    for (let i = 0; i < plusCount; i++) {
+      faces[1 + i] = "+"; // fill positions 2–5
+    }
+  } else if (kind === "neg") {
+    let minusCount = config.minusCount ?? 1;
+    if (minusCount > 4) {
+      alert("Negative die: max minus faces is 4. Using 4.");
+    }
+    minusCount = clamp(minusCount, 1, 4);
+    for (let i = 0; i < minusCount; i++) {
+      faces[1 + i] = "-"; // fill positions 2–5
+    }
+  }
+
+  return faces;
+}
+
+// Convert numeric d6 result (1–6) to face label
+function faceForRoll(config, value) {
+  const faces = buildDieFaces(config);
+  const index = clamp(value, 1, 6) - 1;
+  return faces[index];
+}
+
+// Score faces using your rules:
+// - "1" = 1 point
+// - "R" = 1 point + 1 reroll
+// - "+" / "-" only change final total if there is at least 1 base point
+// - blank = 0
+function scoreFaces(faces) {
+  let basePoints = 0;
+  let plusCount = 0;
+  let minusCount = 0;
+  let rerollCount = 0;
+
+  for (const f of faces) {
+    if (f === "1") {
+      basePoints++;
+    } else if (f === "R") {
+      basePoints++;
+      rerollCount++;
+    } else if (f === "+") {
+      plusCount++;
+    } else if (f === "-") {
+      minusCount++;
+    }
+  }
+
+  let total = 0;
+  if (basePoints > 0) {
+    total = basePoints + plusCount - minusCount;
+    if (total < 0) total = 0; // no negative totals
+  }
+
+  return { basePoints, plusCount, minusCount, rerollCount, total };
+}
+
+// Simple d6
+function rollD6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+// Roll a pool of RolEnRoll dice with rerolls (browser version)
+// dice = array of configs:
+//   { kind: "normal" }
+//   { kind: "adv", plusCount: 2 }
+//   { kind: "neg", minusCount: 1 }
+function rollRolenrollPoolBrowser(dice) {
+  if (!Array.isArray(dice) || dice.length === 0) {
+    dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
+  }
+
+  const baseResults = [];
+  const rerollResults = [];
+
+  let pending = dice.map(d => ({ config: { ...d }, isReroll: false }));
+  let safety = 0;
+
+  // Each "R" creates another die of the same config
+  while (pending.length > 0 && safety < 100) {
+    safety++;
+    const next = [];
+
+    for (const item of pending) {
+      const { config, isReroll } = item;
+      const value = rollD6();
+      const face = faceForRoll(config, value);
+      const rec = { config, roll: value, face, isReroll };
+
+      if (isReroll) {
+        rerollResults.push(rec);
+      } else {
+        baseResults.push(rec);
+      }
+
+      if (face === "R") {
+        next.push({ config: { ...config }, isReroll: true }); // reroll same die
+      }
+    }
+
+    pending = next;
+  }
+
+  const baseFaces = baseResults.map(r => r.face);
+  const rerollFaces = rerollResults.map(r => r.face);
+  const allFaces = baseFaces.concat(rerollFaces);
+
+  const scoring = scoreFaces(allFaces);
+
+  // Split base vs reroll for your summary
+  const basedScore = baseFaces.reduce(
+    (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
+    0
+  );
+  const rerollPoints = rerollFaces.reduce(
+    (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
+    0
+  );
+  const plusTokens = allFaces.filter(f => f === "+").length;
+  const minusTokens = allFaces.filter(f => f === "-").length;
+  const rerollCount = allFaces.filter(f => f === "R").length;
+
+  // Build HTML squares for each die face (like your Foundry chat)
+  const diceHtml = allFaces.map(f => {
+    let symbol = "&nbsp;";
+    let extraClass = "";
+
+    if (f === "1") {
+      symbol = "●";            // 1 point = dot
+      extraClass = "role-roll-face-point";
+    } else if (f === "R") {
+      symbol = "Ⓡ";            // reroll symbol
+      extraClass = "role-roll-face-reroll";
+    } else if (f === "+") {
+      symbol = "+";            // advantage
+      extraClass = "role-roll-face-plus";
+    } else if (f === "-") {
+      symbol = "−";            // negative
+      extraClass = "role-roll-face-minus";
+    } else {
+      // blank
+      extraClass = "role-roll-face-blank";
+    }
+
+    return `<span class="role-roll-die ${extraClass}">${symbol}</span>`;
+  }).join("");
+
+  const html = `
+<div class="role-roll-chat">
+  <div class="role-roll-header"><strong>Role&amp;Roll Dice Pool</strong></div>
+  <div class="role-roll-dice-row">
+    ${diceHtml}
+  </div>
+</div>`;
+
+  return {
+    html,
+    scoring,
+    basedScore,
+    rerollPoints,
+    rerollCount,
+    plusTokens,
+    minusTokens
+  };
+}
+
+// Parse "Special dice" field: aX / nY just like your /rr command
+// e.g. "a1, n2" → [{kind:"adv", plusCount:1}, {kind:"neg", minusCount:2}]
+function parseSpecialDice(str) {
+  const configs = [];
+  const trimmed = str.trim();
+  if (!trimmed) return configs;
+
+  const tokens = trimmed.split(/[, ]+/).map(t => t.trim()).filter(Boolean);
+
+  for (const token of tokens) {
+    let m = token.match(/^a(\d+)$/i);
+    if (m) {
+      const plusCount = parseInt(m[1], 10);
+      configs.push({ kind: "adv", plusCount });
+      continue;
+    }
+    m = token.match(/^n(\d+)$/i);
+    if (m) {
+      const minusCount = parseInt(m[1], 10);
+      configs.push({ kind: "neg", minusCount });
+      continue;
+    }
+
+    alert(`Invalid special dice token: "${token}". Use aX or nY, e.g. "a1, n2".`);
+    throw new Error("Invalid special dice format");
+  }
+
+  return configs;
+}
+
+// Handle form submit
+function onSubmit(e) {
   e.preventDefault();
 
-  const totalInput = document.getElementById("total");
+  const totalInput = document.getElementById("total-dice");
   const specialInput = document.getElementById("special");
 
   const total = parseInt(totalInput.value || "0", 10);
@@ -10,244 +238,40 @@ document.getElementById("dice-form").addEventListener("submit", function (e) {
     return;
   }
 
-  const { adv, neg } = parseSpecialDice(specialInput.value || "");
-
-  // limit advantage & negative dice to 4 each (your previous rule)
-  if (adv > 4 || neg > 4) {
-    alert("Positive (a) and Negative (n) special dice are limited to 4 each.");
+  const specialConfigs = parseSpecialDice(specialInput.value || "");
+  if (specialConfigs.length > total) {
+    alert("Number of special dice (a/n) cannot be more than Total dice.");
     return;
   }
 
-  // special dice must not exceed total dice
-  if (adv + neg > total) {
-    alert("The sum of special dice (a + n) cannot be more than the total dice.");
-    return;
+  const dice = [...specialConfigs];
+  const normalCount = total - specialConfigs.length;
+  for (let i = 0; i < normalCount; i++) {
+    dice.push({ kind: "normal" });
   }
 
-  const normal = total - adv - neg;
+  if (dice.length > 50) {
+    alert("RolEnRoll: Too many dice requested (max 50).");
+    return;
+  }
 
   const {
-    resultHtml,
-    baseScore,
+    html,
+    scoring,
+    basedScore,
     rerollPoints,
-    rCount,
+    rerollCount,
     plusTokens,
     minusTokens
-  } = rollRoleAndRollDice({ normal, adv, neg });
+  } = rollRolenrollPoolBrowser(dice);
 
-  document.getElementById("result").innerHTML = resultHtml;
+  document.getElementById("result").innerHTML = html;
 
-  const totalPoints = baseScore + rerollPoints; // tokens don't change score
-
-  document.getElementById("based-score").textContent = baseScore;
-  document.getElementById("rr-count").textContent = rCount;
+  // Summary
+  document.getElementById("based-score").textContent = basedScore;
+  document.getElementById("rr-count").textContent = rerollCount;
   document.getElementById("rr-points").textContent = rerollPoints;
   document.getElementById("plus-tokens").textContent = plusTokens;
   document.getElementById("minus-tokens").textContent = minusTokens;
-  document.getElementById("total-points").textContent = totalPoints;
-});
-
-/**
- * Parse the "Special dice" field.
- * Format: aX for positive dice, nY for negative dice.
- * Examples: "a1, n1", "a2 n1", "a1,a1,n2"
- */
-function parseSpecialDice(str) {
-  let adv = 0;
-  let neg = 0;
-
-  const trimmed = str.trim();
-  if (!trimmed) return { adv, neg };
-
-  const tokens = trimmed.split(/[, ]+/).map(t => t.trim()).filter(Boolean);
-
-  for (const token of tokens) {
-    const m = token.match(/^([an])(\d+)$/i);
-    if (!m) {
-      alert(
-        `Invalid special dice token: "${token}".\n` +
-        'Use format like: "a1, n1" (a = positive, n = negative).'
-      );
-      throw new Error("Invalid special dice format");
-    }
-    const type = m[1].toLowerCase();
-    const num = parseInt(m[2], 10);
-
-    if (type === "a") adv += num;
-    else if (type === "n") neg += num;
-  }
-
-  return { adv, neg };
-}
-
-/**
- * Define faces for each type of die.
- * You can change these arrays later to match the exact Role&Roll system.
- *
- * Rules we implement now:
- *  - "."  → 1 point
- *  - "Ⓡ" → 1 point + 1 extra reroll die
- *  - "+"  → 0 point, +1 token
- *  - "-"  → 0 point, -1 token
- *  - " " (blank) → 0 point
- */
-const FACE_SETS = {
-  normal: [
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "Ⓡ", basePoints: 1, isR: true,  plusTokens: 0, minusTokens: 0 },
-    { symbol: "+", basePoints: 0, isR: false, plusTokens: 1, minusTokens: 0 },
-    { symbol: "-", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 1 },
-    { symbol: " ", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 0 }
-  ],
-  // For now use same faces for positive/negative.
-  // Later you can customize these to bias towards + or - if needed.
-  positive: [
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "Ⓡ", basePoints: 1, isR: true,  plusTokens: 0, minusTokens: 0 },
-    { symbol: "+", basePoints: 0, isR: false, plusTokens: 1, minusTokens: 0 },
-    { symbol: "+", basePoints: 0, isR: false, plusTokens: 1, minusTokens: 0 },
-    { symbol: " ", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 0 }
-  ],
-  negative: [
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "·", basePoints: 1, isR: false, plusTokens: 0, minusTokens: 0 },
-    { symbol: "Ⓡ", basePoints: 1, isR: true,  plusTokens: 0, minusTokens: 0 },
-    { symbol: "-", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 1 },
-    { symbol: "-", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 1 },
-    { symbol: " ", basePoints: 0, isR: false, plusTokens: 0, minusTokens: 0 }
-  ]
-};
-
-/**
- * Roll dice, handle R rerolls, and build the HTML + summary.
- */
-function rollRoleAndRollDice({ normal, adv, neg }) {
-  const baseRolls = [];    // initial roll
-  const rerollRolls = [];  // all rerolls (including chains)
-  const rerollQueue = [];  // { pool: "normal" | "positive" | "negative" }
-
-  function rollDie(pool, isReroll) {
-    const faces = FACE_SETS[pool];
-    const face = faces[Math.floor(Math.random() * faces.length)];
-    const roll = {
-      pool,
-      isReroll,
-      symbol: face.symbol,
-      basePoints: face.basePoints,
-      isR: face.isR,
-      plusTokens: face.plusTokens,
-      minusTokens: face.minusTokens
-    };
-
-    if (isReroll) {
-      rerollRolls.push(roll);
-    } else {
-      baseRolls.push(roll);
-    }
-
-    if (face.isR) {
-      // each R grants one extra reroll die of the same pool
-      rerollQueue.push({ pool });
-    }
-  }
-
-  // Initial rolls
-  for (let i = 0; i < normal; i++) rollDie("normal", false);
-  for (let i = 0; i < adv; i++)    rollDie("positive", false);
-  for (let i = 0; i < neg; i++)    rollDie("negative", false);
-
-  // Process rerolls (including chains)
-  while (rerollQueue.length > 0) {
-    const { pool } = rerollQueue.shift();
-    rollDie(pool, true);
-  }
-
-  // Group rolls by pool + reroll flag for display
-  const pools = ["normal", "positive", "negative"];
-  const poolLabels = {
-    normal: "Normal",
-    positive: "Positive",
-    negative: "Negative"
-  };
-
-  const baseByPool = { normal: [], positive: [], negative: [] };
-  const rerollByPool = { normal: [], positive: [], negative: [] };
-
-  for (const r of baseRolls) baseByPool[r.pool].push(r);
-  for (const r of rerollRolls) rerollByPool[r.pool].push(r);
-
-  // Build HTML for dice faces
-  let resultHtml = "";
-
-  for (const pool of pools) {
-    const base = baseByPool[pool];
-    const rer = rerollByPool[pool];
-    if (!base.length && !rer.length) continue;
-
-    resultHtml += `<div class="pool-block">`;
-    resultHtml += `<div class="pool-title">${poolLabels[pool]} dice</div>`;
-
-    if (base.length) {
-      resultHtml += `<div class="dice-row">`;
-      resultHtml += base.map(r => renderDie(r, false)).join("");
-      resultHtml += `</div>`;
-    }
-
-    if (rer.length) {
-      resultHtml += `<div class="pool-subtitle">(reroll)</div>`;
-      resultHtml += `<div class="dice-row">`;
-      resultHtml += rer.map(r => renderDie(r, true)).join("");
-      resultHtml += `</div>`;
-    }
-
-    resultHtml += `</div>`;
-  }
-
-  // Calculate scores
-  let baseScore = 0;
-  let rerollPoints = 0;
-  let rCount = 0;
-  let plusTokens = 0;
-  let minusTokens = 0;
-
-  function accumulate(rolls, isReroll) {
-    for (const r of rolls) {
-      if (isReroll) {
-        rerollPoints += r.basePoints;
-      } else {
-        baseScore += r.basePoints;
-      }
-      if (r.isR) rCount += 1;
-      plusTokens += r.plusTokens;
-      minusTokens += r.minusTokens;
-    }
-  }
-
-  accumulate(baseRolls, false);
-  accumulate(rerollRolls, true);
-
-  return {
-    resultHtml,
-    baseScore,
-    rerollPoints,
-    rCount,
-    plusTokens,
-    minusTokens
-  };
-}
-
-/**
- * Render a single die as a little square with the face symbol.
- */
-function renderDie(roll, isReroll) {
-  const classes = ["die"];
-  if (roll.isR) classes.push("die-r");
-  if (roll.plusTokens) classes.push("die-plus");
-  if (roll.minusTokens) classes.push("die-minus");
-  if (isReroll) classes.push("die-reroll");
-
-  const symbol = roll.symbol === " " ? "" : roll.symbol;
-  return `<span class="${classes.join(" ")}">${symbol}</span>`;
+  document.getElementById("total-points").textContent = scoring.total;
 }
