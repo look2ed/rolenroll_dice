@@ -101,3 +101,39 @@ button {
 #summary > div {
   margin-bottom: 0.25rem;
 }
+
+/* existing styles... */
+
+.help-icon {
+  margin-left: 0.5rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #555;
+  background: #f5f5f5;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 22px;
+  text-align: center;
+  padding: 0;
+}
+
+.help-icon:focus {
+  outline: 2px solid #000;
+}
+
+.manual {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  font-size: 0.9rem;
+}
+
+.manual h3 {
+  margin-top: 0;
+}
+
+.hidden {
+  display: none;
+}

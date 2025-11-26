@@ -5,7 +5,18 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("dice-form");
   if (form) form.addEventListener("submit", onSubmit);
+
+  const helpBtn = document.getElementById("help-toggle");
+  const manual = document.getElementById("manual-guide");
+
+  if (helpBtn && manual) {
+    helpBtn.addEventListener("click", () => {
+      const isHidden = manual.classList.toggle("hidden"); // toggle class
+      helpBtn.setAttribute("aria-expanded", (!isHidden).toString());
+    });
+  }
 });
+
 
 // ---------- helpers from your Foundry logic ----------
 
