@@ -12,6 +12,17 @@
     <div class="field">
       <label for="total-dice">Total dice:</label>
       <input id="total-dice" type="number" min="1" value="5" required>
+      <!-- help icon -->
+      <button
+        type="button"
+        id="help-toggle"
+        class="help-icon"
+        aria-label="Show/Hide manual"
+        aria-expanded="false"
+        aria-controls="manual-guide"
+      >
+        ?
+      </button>
     </div>
 
     <div class="field">
@@ -23,13 +34,6 @@
       >
     </div>
 
-    <p class="hint">
-      Examples:<br>
-      • <code>Total dice: 5</code> / <code>Special dice:</code> → 5 normal dice<br>
-      • <code>Total dice: 5</code> / <code>Special dice: a1, n1</code>
-      → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
-    </p>
-
     <div class="field">
       <label for="success">Success:</label>
       <input id="success" type="number" min="0" value="0">
@@ -40,13 +44,38 @@
       <input id="penalty" type="number" min="0" value="0">
     </div>
 
-    <p class="hint">
-      Success adds to total points, Penalty subtracts from total points.
-      (These are from stats / modifiers, not from the dice.)
-    </p>
-
     <button type="submit">Roll</button>
   </form>
+
+  <!-- Hidden manual / guide -->
+  <div id="manual-guide" class="manual hidden">
+    <h3>How to use</h3>
+    <ul>
+      <li><strong>Total dice</strong>: number of dice to roll in the first pool.</li>
+      <li>
+        <strong>Special dice</strong>: use
+        <code>aX</code> for one advantage die with X <code>+</code> faces,
+        <code>nY</code> for one negative die with Y <code>-</code> faces.<br>
+        Example: <code>a1,a1,n2</code> → 2 adv dice (+1 face), 1 neg die (2 - faces).<br>
+        The rest of the dice become normal dice so that the total equals <em>Total dice</em>.
+      </li>
+      <li>
+        <strong>Success</strong>: extra points from stats or abilities (added after dice total).
+      </li>
+      <li>
+        <strong>Penalty</strong>: penalty points from stats/effects (subtracted after dice total).
+      </li>
+      <li>
+        Dice faces: <code>●</code> = 1 point, <code>Ⓡ</code> = 1 point + reroll,
+        <code>+</code>/<code>-</code> are tokens that modify score only if there is at least 1 base point.
+      </li>
+    </ul>
+    <p>
+      Examples:<br>
+      • <code>Total dice: 5</code>, <code>Special dice:</code> → 5 normal dice<br>
+      • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code> → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
+    </p>
+  </div>
 
   <h2>Result</h2>
   <div id="result"></div>
