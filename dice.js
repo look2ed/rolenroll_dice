@@ -2,6 +2,8 @@
 // RolEnRoll Dice System Logic – Browser version
 // ===============================
 
+let rollHistory = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   // form submit
   const form = document.getElementById("dice-form");
@@ -50,9 +52,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // default language = TH
   setLang("th");
+
+  // history panel toggle
+  const historyBtn = document.getElementById("history-toggle");
+  const historyPanel = document.getElementById("history-panel");
+  if (historyBtn && historyPanel) {
+    historyBtn.addEventListener("click", () => {
+      const isNowHidden = historyPanel.classList.toggle("hidden");
+      historyBtn.setAttribute("aria-expanded", (!isNowHidden).toString());
+    });
+  }
+
+  // initial empty history render
+  renderHistory();
 });
-
-
 
 // ---------- helpers from your Foundry logic ----------
 
@@ -282,6 +295,53 @@ function parseSpecialDice(str) {
   return configs;
 }
 
+// ---------- history rendering ----------
+
+function renderHistory() {
+  const container = document.getElementById("history-list");
+  if (!container) return;
+
+  if (!rollHistory.length) {
+    container.innerHTML = '<p class="history-empty">No rolls yet.</p>';
+    return;
+  }
+
+  const html = rollHistory.map(entry => {
+    const date = new Date(entry.time);
+    const timeStr = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    const dateStr = date.toLocaleDateString();
+
+    const specialText = entry.special || "-";
+
+    return `
+      <div class="history-item">
+        <div class="history-header-line">
+          <span class="history-time">${dateStr} ${timeStr}</span>
+          <span class="history-total">Total: ${entry.finalTotal}</span>
+        </div>
+        <div class="history-row">
+          <span>Dice: ${entry.totalDice}</span>
+          <span>Special: ${specialText}</span>
+        </div>
+        <div class="history-row">
+          <span>Base: ${entry.baseScore}</span>
+          <span>R&amp;R: ${entry.rerollCount} (+${entry.rerollPoints})</span>
+        </div>
+        <div class="history-row">
+          <span>Tokens: +${entry.plusTokens} / -${entry.minusTokens}</span>
+          <span>Succ/Pen: +${entry.success} / -${entry.penalty}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  container.innerHTML = html;
+}
+
 // ---------- form handler ----------
 
 function onSubmit(e) {
@@ -370,4 +430,27 @@ function onSubmit(e) {
 
   const elTotal = document.getElementById("total-points");
   if (elTotal) elTotal.textContent = finalTotal;
+
+  // ---- Add to history ----
+  const entry = {
+    time: Date.now(),
+    totalDice: total,
+    special: (specialInput.value || "").trim(),
+    success,
+    penalty,
+    diceTotal,
+    finalTotal,
+    baseScore: basedScore,
+    rerollPoints,
+    rerollCount,
+    plusTokens,
+    minusTokens
+  };
+
+  // latest roll at top
+  rollHistory.unshift(entry);
+  // optional: limit to last 50 entries
+  if (rollHistory.length > 50) rollHistory.length = 50;
+
+  renderHistory();
 }
