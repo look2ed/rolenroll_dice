@@ -361,6 +361,12 @@ function onSubmit(e) {
     return;
   }
 
+  // Trigger 3D dice roll if available (visual only)
+  if (window.roll3dDice) {
+    window.roll3dDice(total);
+  }
+
+
   const specialConfigs = parseSpecialDice(specialInput.value || "");
   if (specialConfigs.length > total) {
     alert("Number of special dice (a/n) cannot be more than Total dice.");

@@ -235,3 +235,21 @@ button {
   color: #777;
 }
 
+#dice-3d-container {
+  width: 100%;
+  max-width: 600px;   /* optional */
+  height: 260px;      /* adjust if you want taller/shorter */
+  margin: 1rem auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #222;   /* background behind the dice */
+}
+
+/* make the canvas fill the box */
+#dice-3d-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
