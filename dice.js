@@ -97,7 +97,9 @@ function rollRolenrollPoolBrowser(dice) {
     dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
   }
 
-  // rounds[0] = first roll, rounds[1] = reroll from R in round 0, etc.
+  // rounds[0] = first roll
+  // rounds[1] = rerolls from R in round 0
+  // rounds[2] = rerolls from R in round 1, etc.
   const rounds = [];
 
   let current = dice.map(config => ({ config }));
@@ -154,7 +156,7 @@ function rollRolenrollPoolBrowser(dice) {
 
     let label = "";
     if (idx === 0) {
-      // first roll (no text needed, but you can add "Roll 1" if you like)
+      // first roll
       label = "";
     } else {
       label = `<em>(reroll ${idx})</em>&nbsp;`;
@@ -278,11 +280,10 @@ function onSubmit(e) {
     minusTokens
   } = rollRolenrollPoolBrowser(dice);
 
-  // Show dice faces
   const resultDiv = document.getElementById("result");
   if (resultDiv) resultDiv.innerHTML = html;
 
-  // Fill summary
+  // Summary
   const elBase = document.getElementById("based-score");
   if (elBase) elBase.textContent = basedScore;
 
