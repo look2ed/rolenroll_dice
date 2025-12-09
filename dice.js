@@ -4,10 +4,14 @@
 
 let rollHistory = [];
 
+// key for localStorage
+const STORAGE_KEY = "rolenroll_sheet_state_v1";
+
 // central sheet state
 const sheetState = {
-  attrs: {},   // e.g. { str: 3, dex: 2, int: 4, ... }
-  skills: {}   // e.g. { search: 2, art: 1, ... }
+  attrs: {},    // e.g. { str: 3, dex: 2, int: 4, ... }
+  skills: {},   // e.g. { search: 2, art: 1, ... }
+  globals: {}   // e.g. { name, health, defense, willpower }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -75,6 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // character-sheet hooks
   setupMentalHearts();
   setupStats();
+
+  // load saved sheet (attrs, skills, hearts, header fields)
+  loadSheetStateFromStorage();
+
+  // watch header fields (name, health, etc.) for changes
+  setupGlobalFieldPersistence();
 });
 
 // ---------- helpers from your Foundry logic ----------
@@ -161,17 +171,6 @@ function rollD6() {
 }
 
 // ---------- main pool roller with automatic rerolls ----------
-//
-// Returns:
-// {
-//   html,          // dice faces rows (all rounds)
-//   scoring,       // from scoreFaces(allFaces)
-//   basedScore,    // points from first-round dice only
-//   rerollPoints,  // points from all later rounds
-//   rerollCount,   // number of R faces
-//   plusTokens,
-//   minusTokens
-// }
 
 function rollRolenrollPoolBrowser(dice) {
   if (!Array.isArray(dice) || dice.length === 0) {
@@ -524,6 +523,7 @@ function setupMentalHearts() {
         btn.classList.remove("off");
         btn.classList.add("on");
       }
+      saveSheetStateToStorage();
     });
   });
 }
@@ -603,7 +603,7 @@ function setupSkillRow(row) {
     const skillVal = sheetState.skills[skillKey] || 0;
 
     const primaryAttrKey = row.dataset.attr;          // e.g. "int", "apt"
-    const altAttrKey = row.dataset.altAttr || row.dataset.altattr; // e.g. "int" for Art
+    const altAttrKey = row.dataset.altAttr || row.dataset.altattr; // e.g. "dex" for Art
 
     let attrDice = 0;
     if (primaryAttrKey) {
@@ -668,6 +668,7 @@ function initDotsForRow(row, store, key) {
       if (nextVal > 6) nextVal = 6;
       store[key] = nextVal;
       updateStatDots(row, nextVal);
+      saveSheetStateToStorage();
     });
   });
 
@@ -681,5 +682,126 @@ function updateStatDots(row, value) {
     const idx = idxAttr ? parseInt(idxAttr, 10) : 0;
     if (idx && idx <= value) dot.classList.add("active");
     else dot.classList.remove("active");
+  });
+}
+
+// ---------- localStorage: save / load sheet state ----------
+
+function saveSheetStateToStorage() {
+  try {
+    const hearts = Array.from(document.querySelectorAll(".mental-heart")).map(
+      (btn) => !btn.classList.contains("off") // default true if not off
+    );
+
+    const globals = {};
+
+    const globalMap = [
+      { id: "char-name", key: "name" },
+      { id: "char-health", key: "health" },
+      { id: "char-defense", key: "defense" },
+      { id: "char-willpower", key: "willpower" }
+    ];
+
+    globalMap.forEach(({ id, key }) => {
+      const el = document.getElementById(id);
+      if (el) {
+        globals[key] = el.value ?? "";
+      }
+    });
+
+    sheetState.globals = globals;
+
+    const payload = {
+      attrs: sheetState.attrs || {},
+      skills: sheetState.skills || {},
+      hearts,
+      globals
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {
+    console.warn("Could not save sheet state:", e);
+  }
+}
+
+function loadSheetStateFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    const data = JSON.parse(raw);
+
+    if (data.attrs) {
+      sheetState.attrs = { ...sheetState.attrs, ...data.attrs };
+    }
+    if (data.skills) {
+      sheetState.skills = { ...sheetState.skills, ...data.skills };
+    }
+    sheetState.globals = data.globals || {};
+
+    // restore hearts
+    if (Array.isArray(data.hearts)) {
+      const hearts = document.querySelectorAll(".mental-heart");
+      hearts.forEach((btn, idx) => {
+        const on = data.hearts[idx];
+        btn.classList.remove("on", "off");
+        if (on === false) btn.classList.add("off");
+        else btn.classList.add("on");
+      });
+    }
+
+    // re-apply dots for attrs & skills
+    const statRows = document.querySelectorAll(".stat-row");
+    statRows.forEach((row) => {
+      const role = row.dataset.role || "attr";
+      if (role === "skill") {
+        const key = row.dataset.skill || row.dataset.stat;
+        if (!key) return;
+        const v = sheetState.skills[key] || 0;
+        updateStatDots(row, v);
+      } else {
+        const key = row.dataset.stat;
+        if (!key) return;
+        const v = sheetState.attrs[key] || 0;
+        updateStatDots(row, v);
+      }
+    });
+
+    // restore header fields
+    const globalMap = [
+      { id: "char-name", key: "name" },
+      { id: "char-health", key: "health" },
+      { id: "char-defense", key: "defense" },
+      { id: "char-willpower", key: "willpower" }
+    ];
+
+    globalMap.forEach(({ id, key }) => {
+      const el = document.getElementById(id);
+      if (el && data.globals && data.globals[key] != null) {
+        el.value = data.globals[key];
+      }
+    });
+  } catch (e) {
+    console.warn("Could not load sheet state:", e);
+  }
+}
+
+// watch header fields and save when user edits them
+function setupGlobalFieldPersistence() {
+  const globalMap = [
+    { id: "char-name", key: "name" },
+    { id: "char-health", key: "health" },
+    { id: "char-defense", key: "defense" },
+    { id: "char-willpower", key: "willpower" }
+  ];
+
+  globalMap.forEach(({ id, key }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("input", () => {
+      sheetState.globals[key] = el.value ?? "";
+      saveSheetStateToStorage();
+    });
   });
 }
