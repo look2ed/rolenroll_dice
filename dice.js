@@ -15,11 +15,14 @@ const sheetState = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // form submit
+  // 1) Load saved sheet state FIRST
+  loadSheetStateFromStorage();
+
+  // 2) Form submit
   const form = document.getElementById("dice-form");
   if (form) form.addEventListener("submit", onSubmit);
 
-  // help panel toggle
+  // 3) Help panel toggle
   const helpBtn = document.getElementById("help-toggle");
   const manual = document.getElementById("manual-guide");
 
@@ -30,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // language switching (TH / EN)
+  // 4) Language switching (TH / EN)
   const langButtons = document.querySelectorAll(".lang-btn");
   const pageTH = document.getElementById("manual-th");
   const pageEN = document.getElementById("manual-en");
@@ -63,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // default language = TH
   setLang("th");
 
-  // history panel toggle
+  // 5) History panel toggle
   const historyBtn = document.getElementById("history-toggle");
   const historyPanel = document.getElementById("history-panel");
   if (historyBtn && historyPanel) {
@@ -73,18 +76,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // initial empty history render
-  renderHistory();
-
-  // character-sheet hooks
+  // 6) Character-sheet hooks (use already-loaded state)
   setupMentalHearts();
   setupStats();
 
-  // load saved sheet (attrs, skills, hearts, header fields)
-  loadSheetStateFromStorage();
-
-  // watch header fields (name, health, etc.) for changes
+  // 7) Header field persistence
   setupGlobalFieldPersistence();
+
+  // 8) Initial empty history render
+  renderHistory();
 });
 
 // ---------- helpers from your Foundry logic ----------
@@ -511,10 +511,12 @@ function setupMentalHearts() {
 
   hearts.forEach((btn, idx) => {
     btn.dataset.index = String(idx + 1);
-    // default: on
+
+    // if no saved state was applied, default to "on"
     if (!btn.classList.contains("on") && !btn.classList.contains("off")) {
       btn.classList.add("on");
     }
+
     btn.addEventListener("click", () => {
       if (btn.classList.contains("on")) {
         btn.classList.remove("on");
@@ -551,6 +553,7 @@ function setupAttrRow(row) {
   const key = row.dataset.stat;
   if (!key) return;
 
+  // use loaded value if present, else 0
   sheetState.attrs[key] = sheetState.attrs[key] ?? 0;
   initDotsForRow(row, sheetState.attrs, key);
 
@@ -690,7 +693,7 @@ function updateStatDots(row, value) {
 function saveSheetStateToStorage() {
   try {
     const hearts = Array.from(document.querySelectorAll(".mental-heart")).map(
-      (btn) => !btn.classList.contains("off") // default true if not off
+      (btn) => !btn.classList.contains("off") // true if ON, false if OFF
     );
 
     const globals = {};
@@ -712,6 +715,7 @@ function saveSheetStateToStorage() {
     sheetState.globals = globals;
 
     const payload = {
+      // IMPORTANT: keep same objects, don't store DOM stuff
       attrs: sheetState.attrs || {},
       skills: sheetState.skills || {},
       hearts,
@@ -731,15 +735,16 @@ function loadSheetStateFromStorage() {
 
     const data = JSON.parse(raw);
 
-    if (data.attrs) {
-      sheetState.attrs = { ...sheetState.attrs, ...data.attrs };
+    // 🔴 IMPORTANT FIX: mutate existing objects, do NOT reassign
+    if (data.attrs && typeof data.attrs === "object") {
+      Object.assign(sheetState.attrs, data.attrs);
     }
-    if (data.skills) {
-      sheetState.skills = { ...sheetState.skills, ...data.skills };
+    if (data.skills && typeof data.skills === "object") {
+      Object.assign(sheetState.skills, data.skills);
     }
     sheetState.globals = data.globals || {};
 
-    // restore hearts
+    // restore hearts (classes only; events added later in setupMentalHearts)
     if (Array.isArray(data.hearts)) {
       const hearts = document.querySelectorAll(".mental-heart");
       hearts.forEach((btn, idx) => {
@@ -749,23 +754,6 @@ function loadSheetStateFromStorage() {
         else btn.classList.add("on");
       });
     }
-
-    // re-apply dots for attrs & skills
-    const statRows = document.querySelectorAll(".stat-row");
-    statRows.forEach((row) => {
-      const role = row.dataset.role || "attr";
-      if (role === "skill") {
-        const key = row.dataset.skill || row.dataset.stat;
-        if (!key) return;
-        const v = sheetState.skills[key] || 0;
-        updateStatDots(row, v);
-      } else {
-        const key = row.dataset.stat;
-        if (!key) return;
-        const v = sheetState.attrs[key] || 0;
-        updateStatDots(row, v);
-      }
-    });
 
     // restore header fields
     const globalMap = [
@@ -781,6 +769,8 @@ function loadSheetStateFromStorage() {
         el.value = data.globals[key];
       }
     });
+
+    // dots are re-applied in setupStats()
   } catch (e) {
     console.warn("Could not load sheet state:", e);
   }
