@@ -8,184 +8,309 @@
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
 
-  <form id="dice-form">
-    <div class="field">
-      <label for="total-dice">Total dice:</label>
-      <input id="total-dice" type="number" min="1" value="5" required>
-      <!-- help icon -->
-      <button
-        type="button"
-        id="help-toggle"
-        class="help-icon"
-        aria-label="Show/Hide manual"
-        aria-expanded="false"
-        aria-controls="manual-guide"
-      >
-        ?
-      </button>
-    </div>
+  <main class="layout">
+    <!-- LEFT: Dice roller panel -->
+    <section class="dice-panel">
+      <form id="dice-form">
+        <div class="field">
+          <label for="total-dice">Total dice:</label>
+          <input id="total-dice" type="number" min="1" value="5" required>
 
-    <div class="field">
-      <label for="special">Special dice:</label>
-      <input
-        id="special"
-        type="text"
-        placeholder="e.g. a1, n1 (a = positive, n = negative)"
-      >
-    </div>
+          <!-- help icon -->
+          <button
+            type="button"
+            id="help-toggle"
+            class="help-icon"
+            aria-label="Show/Hide manual"
+            aria-expanded="false"
+            aria-controls="manual-guide"
+          >
+            ?
+          </button>
+        </div>
 
-    <div class="field">
-      <label for="success">Success:</label>
-      <input id="success" type="number" min="0" value="0">
-    </div>
+        <div class="field">
+          <label for="special">Special dice:</label>
+          <input
+            id="special"
+            type="text"
+            placeholder="e.g. a1, n1 (a = positive, n = negative)"
+          >
+        </div>
 
-    <div class="field">
-      <label for="penalty">Penalty:</label>
-      <input id="penalty" type="number" min="0" value="0">
-    </div>
+        <div class="field">
+          <label for="success">Success:</label>
+          <input id="success" type="number" min="0" value="0">
+        </div>
 
-    <button type="submit">Roll</button>
-  </form>
+        <div class="field">
+          <label for="penalty">Penalty:</label>
+          <input id="penalty" type="number" min="0" value="0">
+        </div>
 
-  <!-- Manual / Guide with TH & EN pages -->
-  <div id="manual-guide" class="manual hidden">
-    <div class="manual-header">
-      <h3>คู่มือ / Manual</h3>
-      <div class="manual-lang">
-        <button
-          type="button"
-          class="lang-btn active"
-          data-lang="th"
-        >TH</button>
-        <button
-          type="button"
-          class="lang-btn"
-          data-lang="en"
-        >EN</button>
+        <button type="submit">Roll</button>
+      </form>
+
+      <!-- Manual / Guide with TH & EN pages -->
+      <div id="manual-guide" class="manual hidden">
+        <div class="manual-header">
+          <h3>คู่มือ / Manual</h3>
+          <div class="manual-lang">
+            <button
+              type="button"
+              class="lang-btn active"
+              data-lang="th"
+            >TH</button>
+            <button
+              type="button"
+              class="lang-btn"
+              data-lang="en"
+            >EN</button>
+          </div>
+        </div>
+
+        <!-- Thai page (default visible) -->
+        <div id="manual-th" class="manual-page">
+          <ul>
+            <li><strong>Total dice</strong> : จำนวนเต๋าที่ทอยในชุดแรกทั้งหมด</li>
+            <li>
+              <strong>Special dice</strong> :
+              ใช้รูปแบบ <code>aX</code> สำหรับเต๋าบัฟที่มีหน้า <code>+</code> จำนวน X หน้า,
+              และ <code>nY</code> สำหรับเต๋าดีบัฟที่มีหน้า <code>-</code> จำนวน Y หน้า<br>
+              ตัวอย่าง <code>a1,a1,n2</code> → เต๋าบัฟ 2 ลูก (มี + อย่างละ 1 หน้า),
+              เต๋าดีบัฟ 1 ลูก (มี - 2 หน้า) ส่วนเต๋าที่เหลือจะเป็นเต๋าปกติ
+            </li>
+            <li>
+              <strong>Success</strong> : คะแนนจากค่าสเตตัส/ความสามารถ/การจ่าย Will Power
+              ที่นำไปบวกเพิ่มทีหลังจากผลเต๋า
+            </li>
+            <li>
+              <strong>Penalty</strong> : คะแนนติดลบจากสเตตัส/ดีบัฟ
+              ที่นำไปลบออกทีหลังจากผลเต๋า
+            </li>
+            <li>
+              <strong>หน้าลูกเต๋า</strong> : <code>●</code> = 1 แต้ม,
+              <code>Ⓡ</code> = 1 แต้ม + ทอยเต๋าเพิ่มอีก 1 ลูก,
+              <code>+</code> / <code>-</code> เป็นแต้มพิเศษที่นำไปบวก/ลบ
+              จากคะแนนรวม <em>ก็ต่อเมื่อ</em> มีแต้มพื้นฐานอย่างน้อย 1 แต้ม
+            </li>
+          </ul>
+          <p>
+            ตัวอย่าง:<br>
+            • <code>Total dice: 5</code> → เต๋าปกติ 5 ลูก <br>
+            • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
+            → เต๋าปกติ จำนวน 3 ลูก, เต๋าบัฟ (+ 1 หน้า) จำนวน 1 ลูก, เต๋าดีบัฟ (- 1 หน้า) จำนวน 1 ลูก
+          </p>
+        </div>
+
+        <!-- English page -->
+        <div id="manual-en" class="manual-page hidden">
+          <ul>
+            <li><strong>Total dice</strong>: number of dice rolled in the first pool.</li>
+            <li>
+              <strong>Special dice</strong>:
+              use <code>aX</code> for one advantage die with X <code>+</code> faces,
+              <code>nY</code> for one negative die with Y <code>-</code> faces.<br>
+              Example: <code>a1,a1,n2</code> → 2 adv dice (+1 face), 1 neg die (2 - faces).
+              The remaining dice become normal dice so that
+              the total equals <em>Total dice</em>.
+            </li>
+            <li>
+              <strong>Success</strong>: extra points from stats/abilities/Will Power, added
+              after the dice total.
+            </li>
+            <li>
+              <strong>Penalty</strong>: penalty points from stats/effects, subtracted
+              after the dice total.
+            </li>
+            <li>
+              <strong>Dice faces</strong>: <code>●</code> = 1 point,
+              <code>Ⓡ</code> = 1 point + 1 extra die of the same type next round,
+              <code>+</code>/<code>-</code> are tokens that modify the total
+              only if there is at least 1 base point.
+            </li>
+          </ul>
+          <p>
+            Examples:<br>
+            • <code>Total dice: 5</code> → 5 normal dice<br>
+            • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
+            → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
+          </p>
+        </div>
       </div>
-    </div>
 
-    <!-- Thai page (default visible) -->
-    <div id="manual-th" class="manual-page">
-      <ul>
-        <li><strong>Total dice</strong> : จำนวนเต๋าที่ทอยในชุดแรกทั้งหมด</li>
-        <li>
-          <strong>Special dice</strong> :
-          ใช้รูปแบบ <code>aX</code> สำหรับเต๋าบัฟที่มีหน้า <code>+</code> จำนวน X หน้า,
-          และ <code>nY</code> สำหรับเต๋าดีบัฟที่มีหน้า <code>-</code> จำนวน Y หน้า<br>
-          ตัวอย่าง <code>a1,a1,n2</code> → เต๋าบัฟ 2 ลูก (มี + อย่างละ 1 หน้า),
-          เต๋าดีบัฟ 1 ลูก (มี - 2 หน้า) ส่วนเต๋าที่เหลือจะเป็นเต๋าปกติ
-        </li>
-        <li>
-          <strong>Success</strong> : คะแนนจากค่าสเตตัส/ความสามารถ/การจ่าย Will Power
-          ที่นำไปบวกเพิ่มทีหลังจากผลเต๋า
-        </li>
-        <li>
-          <strong>Penalty</strong> : คะแนนติดลบจากสเตตัส/ดีบัฟ
-          ที่นำไปลบออกทีหลังจากผลเต๋า
-        </li>
-        <li>
-          <strong>หน้าลูกเต๋า</strong> : <code>●</code> = 1 แต้ม,
-          <code>Ⓡ</code> = 1 แต้ม + ทอยเต๋าเพิ่มอีก 1 ลูก,
-          <code>+</code> / <code>-</code> เป็นแต้มพิเศษที่นำไปบวก/ลบ
-          จากคะแนนรวม <em>ก็ต่อเมื่อ</em> มีแต้มพื้นฐานอย่างน้อย 1 แต้ม
-        </li>
-      </ul>
-      <p>
-        ตัวอย่าง:<br>
-        • <code>Total dice: 5</code> → เต๋าปกติ 5 ลูก <br>
-        • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
-        → เต๋าปกติ จำนวน 3 ลูก, เต๋าบัฟ (+ 1 หน้า) จำนวน 1 ลูก, เต๋าดีบัฟ (- 1 หน้า) จำนวน 1 ลูก
-      </p>
-    </div>
+      <!-- (ถ้ามี 3D dice ให้ใส่ container ไว้ตรงนี้ได้) -->
+      <h2>Result</h2>
+      <div id="result"></div>
 
-    <!-- English page -->
-    <div id="manual-en" class="manual-page hidden">
-      <ul>
-        <li><strong>Total dice</strong>: number of dice rolled in the first pool.</li>
-        <li>
-          <strong>Special dice</strong>:
-          use <code>aX</code> for one advantage die with X <code>+</code> faces,
-          <code>nY</code> for one negative die with Y <code>-</code> faces.<br>
-          Example: <code>a1,a1,n2</code> → 2 adv dice (+1 face), 1 neg die (2 - faces).
-          The remaining dice become normal dice so that
-          the total equals <em>Total dice</em>.
-        </li>
-        <li>
-          <strong>Success</strong>: extra points from stats/abilities/Will Power, added
-          after the dice total.
-        </li>
-        <li>
-          <strong>Penalty</strong>: penalty points from stats/effects, subtracted
-          after the dice total.
-        </li>
-        <li>
-          <strong>Dice faces</strong>: <code>●</code> = 1 point,
-          <code>Ⓡ</code> = 1 point + 1 extra die of the same type next round,
-          <code>+</code>/<code>-</code> are tokens that modify the total
-          only if there is at least 1 base point.
-        </li>
-      </ul>
-      <p>
-        Examples:<br>
-        • <code>Total dice: 5</code> → 5 normal dice<br>
-        • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
-        → 3 normal, 1 adv die (+1 face), 1 neg die (-1 face)
-      </p>
-    </div>
-  </div>
+      <h2>Summary</h2>
+      <div id="summary">
+        <div><strong>Based score :</strong> <span id="based-score">0</span></div>
+        <div>
+          <strong>R&amp;R :</strong>
+          <span id="rr-count">0</span>
+          (+<span id="rr-points">0</span>)
+        </div>
+        <div>
+          <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>
+          &nbsp;
+          <strong>- token(s) :</strong> <span id="minus-tokens">0</span>
+        </div>
+        <div>
+          <strong>Success :</strong> <span id="stat-success">0</span>
+          &nbsp;
+          <strong>Penalty :</strong> <span id="stat-penalty">0</span>
+        </div>
+        <div>
+          <strong>Total point(s) :</strong>
+          <span id="total-points" class="total-highlight">0</span>
+        </div>
+      </div>
 
-  
-  <h2>Result</h2>
-  <div id="result"></div>
+      <h2 class="history-title">
+        <span>History</span>
+        <button
+          type="button"
+          id="history-toggle"
+          class="history-toggle"
+          aria-label="Show/Hide history"
+          aria-expanded="false"
+          aria-controls="history-panel"
+        >
+          🕒
+        </button>
+      </h2>
 
-  <h2>Summary</h2>
-  <div id="summary">
-    <div><strong>Based score :</strong> <span id="based-score">0</span></div>
-    <div>
-      <strong>R&amp;R :</strong>
-      <span id="rr-count">0</span>
-      (+<span id="rr-points">0</span>)
-    </div>
-    <div>
-      <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>
-      &nbsp;
-      <strong>- token(s) :</strong> <span id="minus-tokens">0</span>
-    </div>
-    <div>
-      <strong>Success :</strong> <span id="stat-success">0</span>
-      &nbsp;
-      <strong>Penalty :</strong> <span id="stat-penalty">0</span>
-    </div>
-    <div>
-      <strong>Total point(s) :</strong>
-      <span id="total-points" class="total-highlight">0</span>
-    </div>
-  </div>
+      <div id="history-panel" class="history hidden">
+        <div id="history-list" class="history-list">
+          <p class="history-empty">No rolls yet.</p>
+        </div>
+      </div>
+    </section>
 
-  <h2 class="history-title">
-  <span>History</span>
-  <button
-    type="button"
-    id="history-toggle"
-    class="history-toggle"
-    aria-label="Show/Hide history"
-    aria-expanded="false"
-    aria-controls="history-panel"
-  >
-    🕒
-  </button>
-</h2>
+    <!-- RIGHT: Character sheet panel -->
+    <aside class="sheet-panel">
+      <h2>Character Sheet</h2>
 
-<div id="history-panel" class="history hidden">
-  <div id="history-list" class="history-list">
-    <p class="history-empty">No rolls yet.</p>
-  </div>
-</div>
+      <!-- Upper section: basic info + mental hearts -->
+      <div class="sheet-header">
+        <div class="sheet-top-fields">
+          <div class="sheet-row">
+            <label for="char-name">Name</label>
+            <input id="char-name" type="text">
+          </div>
 
+          <div class="sheet-row">
+            <label>Health</label>
+            <input id="char-hp-current" type="number" min="0" value="0">
+            <span>/</span>
+            <input id="char-hp-max" type="number" min="0" value="0">
+          </div>
 
+          <div class="sheet-row">
+            <label for="char-def">Defense</label>
+            <input id="char-def" type="number" min="0" value="0">
+          </div>
 
+          <div class="sheet-row">
+            <label>Will Power</label>
+            <input id="char-wp-current" type="number" min="0" value="0">
+            <span>/</span>
+            <input id="char-wp-max" type="number" min="0" value="0">
+          </div>
 
+          <div class="sheet-row">
+            <label>Mental</label>
+            <div class="mental-hearts" id="mental-hearts">
+              <!-- 18 clickable hearts -->
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+              <button type="button" class="mental-heart on"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attribute section -->
+      <h3 class="sheet-section-title">Attribute</h3>
+
+      <div class="stat-section">
+        <h4 class="sheet-subtitle">Body</h4>
+
+        <!-- Strength -->
+        <div class="stat-row" data-stat-name="Strength">
+          <span class="stat-label">Strength</span>
+          <div class="stat-dots">
+            <button type="button" class="stat-dot" data-value="1"></button>
+            <button type="button" class="stat-dot" data-value="2"></button>
+            <button type="button" class="stat-dot" data-value="3"></button>
+            <button type="button" class="stat-dot" data-value="4"></button>
+            <button type="button" class="stat-dot" data-value="5"></button>
+            <button type="button" class="stat-dot" data-value="6"></button>
+          </div>
+          <label class="stat-bonus">
+            <input type="checkbox" class="stat-succeed">
+            +1 success
+          </label>
+          <button type="button" class="stat-roll-btn">Roll</button>
+        </div>
+
+        <!-- Dexterity -->
+        <div class="stat-row" data-stat-name="Dexterity">
+          <span class="stat-label">Dexterity</span>
+          <div class="stat-dots">
+            <button type="button" class="stat-dot" data-value="1"></button>
+            <button type="button" class="stat-dot" data-value="2"></button>
+            <button type="button" class="stat-dot" data-value="3"></button>
+            <button type="button" class="stat-dot" data-value="4"></button>
+            <button type="button" class="stat-dot" data-value="5"></button>
+            <button type="button" class="stat-dot" data-value="6"></button>
+          </div>
+          <label class="stat-bonus">
+            <input type="checkbox" class="stat-succeed">
+            +1 success
+          </label>
+          <button type="button" class="stat-roll-btn">Roll</button>
+        </div>
+
+        <!-- Toughness -->
+        <div class="stat-row" data-stat-name="Toughness">
+          <span class="stat-label">Toughness</span>
+          <div class="stat-dots">
+            <button type="button" class="stat-dot" data-value="1"></button>
+            <button type="button" class="stat-dot" data-value="2"></button>
+            <button type="button" class="stat-dot" data-value="3"></button>
+            <button type="button" class="stat-dot" data-value="4"></button>
+            <button type="button" class="stat-dot" data-value="5"></button>
+            <button type="button" class="stat-dot" data-value="6"></button>
+          </div>
+          <label class="stat-bonus">
+            <input type="checkbox" class="stat-succeed">
+            +1 success
+          </label>
+          <button type="button" class="stat-roll-btn">Roll</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ถ้าใช้ 3D dice ให้เพิ่มไฟล์ script นี้ (ถ้าไม่มีไฟล์จะโหลดไม่สำเร็จแต่หน้าเว็บยังทำงานได้) -->
+  <!-- <script type="module" src="dice3d.js"></script> -->
   <script src="dice.js"></script>
 </body>
 </html>

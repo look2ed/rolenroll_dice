@@ -1,9 +1,12 @@
+/* ===== Base layout ===== */
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  max-width: 640px;
+  max-width: 1120px;
   margin: 2rem auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
   line-height: 1.4;
+  background: #f4f1e9;
 }
 
 h1 {
@@ -12,8 +15,27 @@ h1 {
 }
 
 h2 {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
 }
+
+/* two-column layout */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+/* left = dice panel, right = sheet panel */
+.dice-panel,
+.sheet-panel {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem 1.25rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* ===== Form + common controls ===== */
 
 .field {
   margin-bottom: 0.75rem;
@@ -22,18 +44,30 @@ h2 {
 label {
   display: inline-block;
   width: 140px;
+  font-weight: 500;
 }
 
 input[type="number"],
 input[type="text"] {
   padding: 0.25rem 0.4rem;
-  min-width: 240px;
+  min-width: 220px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  font-size: 0.95rem;
 }
 
 button {
   margin-top: 0.75rem;
   padding: 0.4rem 0.9rem;
   cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #999;
+  background: #f3f3f3;
+  font-size: 0.95rem;
+}
+
+button:hover {
+  background: #e7e7e7;
 }
 
 .hint {
@@ -41,6 +75,8 @@ button {
   color: #555;
   margin-top: 0.5rem;
 }
+
+/* ===== Dice result & faces ===== */
 
 #result {
   margin-top: 1rem;
@@ -102,7 +138,7 @@ button {
   margin-bottom: 0.25rem;
 }
 
-/* existing styles... */
+/* ===== Manual / help ===== */
 
 .help-icon {
   margin-left: 0.5rem;
@@ -164,6 +200,8 @@ button {
 .manual h3 {
   margin-top: 0;
 }
+
+/* ===== History box ===== */
 
 .hidden {
   display: none;
@@ -235,4 +273,160 @@ button {
   color: #777;
 }
 
+/* ===== Character sheet panel ===== */
 
+.sheet-panel h2 {
+  margin-top: 0;
+}
+
+/* upper info area */
+.sheet-header {
+  border-bottom: 1px solid #d0c7b9;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sheet-top-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.sheet-row > label {
+  width: 80px;
+  font-weight: 600;
+}
+
+.sheet-row input[type="text"],
+.sheet-row input[type="number"] {
+  min-width: 0;
+  width: 80px;
+}
+
+.sheet-row input#char-name {
+  flex: 1;
+  width: auto;
+}
+
+.sheet-row span {
+  font-weight: 600;
+}
+
+/* mental hearts */
+.mental-hearts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
+.mental-heart {
+  margin-top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+/* by default use :before, JS just toggles .on / .off */
+.mental-heart::before {
+  content: "♥";
+}
+
+/* red = healthy, black = damaged (or swap if you prefer) */
+.mental-heart.on {
+  color: #e02424;
+}
+
+.mental-heart.off {
+  color: #222222;
+}
+
+/* ===== Attribute / stats section ===== */
+
+.sheet-section-title {
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-top: 1px solid #d0c7b9;
+  padding-top: 0.5rem;
+}
+
+.sheet-subtitle {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.stat-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.stat-label {
+  font-weight: 600;
+}
+
+/* dots for attribute value */
+.stat-dots {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.stat-dot {
+  margin-top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  background: #fdfbf7;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* filled dot = active point */
+.stat-dot.active {
+  background: #111;
+}
+
+/* succeed checkbox */
+.stat-bonus {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.stat-bonus input {
+  margin-top: 0;
+}
+
+/* roll button for each stat */
+.stat-roll-btn {
+  margin-top: 0;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.85rem;
+  background: #c9b08a;
+  border-color: #a88c5c;
+}
+
+.stat-roll-btn:hover {
+  background: #b79a6e;
+}

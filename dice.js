@@ -36,14 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
       pageTH.classList.add("hidden");
     }
 
-    langButtons.forEach(btn => {
+    langButtons.forEach((btn) => {
       const bLang = btn.getAttribute("data-lang");
       if (bLang === lang) btn.classList.add("active");
       else btn.classList.remove("active");
     });
   }
 
-  langButtons.forEach(btn => {
+  langButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const lang = btn.getAttribute("data-lang") || "th";
       setLang(lang);
@@ -65,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // initial empty history render
   renderHistory();
+
+  // character-sheet hooks
+  setupMentalHearts();
+  setupStats();
 });
 
 // ---------- helpers from your Foundry logic ----------
@@ -162,7 +166,7 @@ function rollRolenrollPoolBrowser(dice) {
   // rounds[2] = rerolls from R in round 1, etc.
   const rounds = [];
 
-  let current = dice.map(config => ({ config }));
+  let current = dice.map((config) => ({ config }));
   let safety = 0;
 
   while (current.length > 0 && safety < 100) {
@@ -186,23 +190,23 @@ function rollRolenrollPoolBrowser(dice) {
     current = next;
   }
 
-  const baseFaces = rounds[0] ? rounds[0].map(r => r.face) : [];
-  const rerollFaces = rounds.slice(1).flat().map(r => r.face);
+  const baseFaces = rounds[0] ? rounds[0].map((r) => r.face) : [];
+  const rerollFaces = rounds.slice(1).flat().map((r) => r.face);
   const allFaces = baseFaces.concat(rerollFaces);
 
   const scoring = scoreFaces(allFaces);
 
   const basedScore = baseFaces.reduce(
-    (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
+    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
     0
   );
   const rerollPoints = rerollFaces.reduce(
-    (s, f) => s + ((f === "1" || f === "R") ? 1 : 0),
+    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
     0
   );
-  const plusTokens = allFaces.filter(f => f === "+").length;
-  const minusTokens = allFaces.filter(f => f === "-").length;
-  const rerollCount = allFaces.filter(f => f === "R").length;
+  const plusTokens = allFaces.filter((f) => f === "+").length;
+  const minusTokens = allFaces.filter((f) => f === "-").length;
+  const rerollCount = allFaces.filter((f) => f === "R").length;
 
   // ---- Build HTML: one row per round ----
   let html = `
@@ -212,7 +216,7 @@ function rollRolenrollPoolBrowser(dice) {
 
   rounds.forEach((round, idx) => {
     if (!round.length) return;
-    const facesHtml = round.map(r => faceToDieHtml(r.face)).join("");
+    const facesHtml = round.map((r) => faceToDieHtml(r.face)).join("");
 
     let label = "";
     if (idx === 0) {
@@ -237,7 +241,7 @@ function rollRolenrollPoolBrowser(dice) {
     rerollPoints,
     rerollCount,
     plusTokens,
-    minusTokens
+    minusTokens,
   };
 }
 
@@ -247,16 +251,16 @@ function faceToDieHtml(f) {
   let extraClass = "";
 
   if (f === "1") {
-    symbol = "●";            // 1 point = dot
+    symbol = "●"; // 1 point = dot
     extraClass = "role-roll-face-point";
   } else if (f === "R") {
-    symbol = "Ⓡ";            // reroll symbol
+    symbol = "Ⓡ"; // reroll symbol
     extraClass = "role-roll-face-reroll";
   } else if (f === "+") {
-    symbol = "+";            // advantage
+    symbol = "+"; // advantage
     extraClass = "role-roll-face-plus";
   } else if (f === "-") {
-    symbol = "−";            // negative
+    symbol = "−"; // negative
     extraClass = "role-roll-face-minus";
   } else {
     extraClass = "role-roll-face-blank"; // blank
@@ -272,7 +276,10 @@ function parseSpecialDice(str) {
   const trimmed = str.trim();
   if (!trimmed) return configs;
 
-  const tokens = trimmed.split(/[, ]+/).map(t => t.trim()).filter(Boolean);
+  const tokens = trimmed
+    .split(/[, ]+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
 
   for (const token of tokens) {
     let m = token.match(/^a(\d+)$/i);
@@ -288,7 +295,9 @@ function parseSpecialDice(str) {
       continue;
     }
 
-    alert(`Invalid special dice token: "${token}". Use aX or nY, e.g. "a1, n2".`);
+    alert(
+      `Invalid special dice token: "${token}". Use aX or nY, e.g. "a1, n2".`
+    );
     throw new Error("Invalid special dice format");
   }
 
@@ -306,18 +315,19 @@ function renderHistory() {
     return;
   }
 
-  const html = rollHistory.map(entry => {
-    const date = new Date(entry.time);
-    const timeStr = date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-    const dateStr = date.toLocaleDateString();
+  const html = rollHistory
+    .map((entry) => {
+      const date = new Date(entry.time);
+      const timeStr = date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const dateStr = date.toLocaleDateString();
 
-    const specialText = entry.special || "-";
+      const specialText = entry.special || "-";
 
-    return `
+      return `
       <div class="history-item">
         <div class="history-header-line">
           <span class="history-time">${dateStr} ${timeStr}</span>
@@ -337,44 +347,41 @@ function renderHistory() {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
   container.innerHTML = html;
 }
 
-// ---------- form handler ----------
+// ---------- core roll executor (used by form + stats) ----------
 
-function onSubmit(e) {
-  e.preventDefault();
-
-  const totalInput =
-    document.getElementById("total-dice") ||
-    document.getElementById("total"); // fallback
-
-  const specialInput = document.getElementById("special");
-  const successInput = document.getElementById("success");
-  const penaltyInput = document.getElementById("penalty");
-
-  const total = parseInt(totalInput.value || "0", 10);
-  if (isNaN(total) || total <= 0) {
+function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
+  const totalNum = parseInt(total ?? 0, 10);
+  if (isNaN(totalNum) || totalNum <= 0) {
     alert("Please enter a valid total number of dice (at least 1).");
     return;
   }
 
-// Trigger 3D dice roll if available (visual only)
+  // 3D dice visual (if available)
   if (window.roll3dDice) {
-    window.roll3dDice(total);
+    window.roll3dDice(totalNum);
   }
 
+  let specialConfigs;
+  try {
+    specialConfigs = parseSpecialDice(specialStr || "");
+  } catch (e) {
+    // parseSpecialDice already alerts on error
+    return;
+  }
 
-  const specialConfigs = parseSpecialDice(specialInput.value || "");
-  if (specialConfigs.length > total) {
+  if (specialConfigs.length > totalNum) {
     alert("Number of special dice (a/n) cannot be more than Total dice.");
     return;
   }
 
   const dice = [...specialConfigs];
-  const normalCount = total - specialConfigs.length;
+  const normalCount = totalNum - specialConfigs.length;
   for (let i = 0; i < normalCount; i++) {
     dice.push({ kind: "normal" });
   }
@@ -392,20 +399,20 @@ function onSubmit(e) {
     rerollPoints,
     rerollCount,
     plusTokens,
-    minusTokens
+    minusTokens,
   } = rollRolenrollPoolBrowser(dice);
 
-  // Read success / penalty modifiers
-  let success = parseInt(successInput.value || "0", 10);
-  let penalty = parseInt(penaltyInput.value || "0", 10);
-  if (isNaN(success)) success = 0;
-  if (isNaN(penalty)) penalty = 0;
-  if (success < 0) success = 0;
-  if (penalty < 0) penalty = 0;
+  // clamp success / penalty
+  let succ = parseInt(success ?? 0, 10);
+  let pen = parseInt(penalty ?? 0, 10);
+  if (isNaN(succ)) succ = 0;
+  if (isNaN(pen)) pen = 0;
+  if (succ < 0) succ = 0;
+  if (pen < 0) pen = 0;
 
   // Dice total from scoring.total, then apply stats
   const diceTotal = scoring.total;
-  let finalTotal = diceTotal + success - penalty;
+  let finalTotal = diceTotal + succ - pen;
   if (finalTotal < 0) finalTotal = 0;
 
   // Show dice faces
@@ -429,10 +436,10 @@ function onSubmit(e) {
   if (elMinus) elMinus.textContent = minusTokens;
 
   const elSucc = document.getElementById("stat-success");
-  if (elSucc) elSucc.textContent = success;
+  if (elSucc) elSucc.textContent = succ;
 
   const elPen = document.getElementById("stat-penalty");
-  if (elPen) elPen.textContent = penalty;
+  if (elPen) elPen.textContent = pen;
 
   const elTotal = document.getElementById("total-points");
   if (elTotal) elTotal.textContent = finalTotal;
@@ -440,23 +447,152 @@ function onSubmit(e) {
   // ---- Add to history ----
   const entry = {
     time: Date.now(),
-    totalDice: total,
-    special: (specialInput.value || "").trim(),
-    success,
-    penalty,
+    totalDice: totalNum,
+    special: (specialStr || "").trim(),
+    success: succ,
+    penalty: pen,
     diceTotal,
     finalTotal,
     baseScore: basedScore,
     rerollPoints,
     rerollCount,
     plusTokens,
-    minusTokens
+    minusTokens,
   };
 
   // latest roll at top
   rollHistory.unshift(entry);
-  // optional: limit to last 50 entries
   if (rollHistory.length > 50) rollHistory.length = 50;
 
   renderHistory();
+}
+
+// ---------- form handler ----------
+
+function onSubmit(e) {
+  e.preventDefault();
+
+  const totalInput =
+    document.getElementById("total-dice") ||
+    document.getElementById("total"); // fallback
+
+  const specialInput = document.getElementById("special");
+  const successInput = document.getElementById("success");
+  const penaltyInput = document.getElementById("penalty");
+
+  const total = totalInput ? totalInput.value : "0";
+  const specialStr = specialInput ? specialInput.value : "";
+  let success = successInput ? successInput.value : "0";
+  let penalty = penaltyInput ? penaltyInput.value : "0";
+
+  performRoll({
+    total,
+    specialStr,
+    success,
+    penalty,
+  });
+}
+
+// ---------- Character sheet: mental hearts ----------
+
+function setupMentalHearts() {
+  const hearts = document.querySelectorAll(".mental-heart");
+  if (!hearts.length) return;
+
+  hearts.forEach((btn, idx) => {
+    btn.dataset.index = String(idx + 1);
+    // default: on
+    if (!btn.classList.contains("on") && !btn.classList.contains("off")) {
+      btn.classList.add("on");
+    }
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("on")) {
+        btn.classList.remove("on");
+        btn.classList.add("off");
+      } else {
+        btn.classList.remove("off");
+        btn.classList.add("on");
+      }
+    });
+  });
+}
+
+// ---------- Character sheet: stats (dots + roll) ----------
+
+function setupStats() {
+  const statRows = document.querySelectorAll(".stat-row");
+  if (!statRows.length) return;
+
+  const statValues = {}; // e.g. { str: 3, dex: 2 }
+
+  statRows.forEach((row) => {
+    const statKey = row.dataset.stat;
+    if (!statKey) return;
+
+    statValues[statKey] = 0;
+
+    const dots = row.querySelectorAll(".stat-dot");
+    dots.forEach((dot) => {
+      const idx = parseInt(dot.dataset.index || "0", 10);
+      dot.addEventListener("click", () => {
+        const current = statValues[statKey] || 0;
+        let nextVal;
+        if (current === idx) {
+          nextVal = idx - 1; // clicking same highest dot lowers by 1
+        } else {
+          nextVal = idx;
+        }
+        if (nextVal < 0) nextVal = 0;
+        if (nextVal > 6) nextVal = 6;
+        statValues[statKey] = nextVal;
+        updateStatDots(row, nextVal);
+      });
+    });
+
+    // initial visual
+    updateStatDots(row, statValues[statKey]);
+
+    const rollBtn = row.querySelector(".stat-roll-btn");
+    if (rollBtn) {
+      rollBtn.addEventListener("click", () => {
+        const value = statValues[statKey] || 0;
+        if (value <= 0) {
+          alert(
+            "This attribute has 0 points. Click the dots to set points before rolling."
+          );
+          return;
+        }
+
+        const bonusCheckbox = row.querySelector(".stat-bonus-checkbox");
+        let statBonus =
+          bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
+
+        const globalSuccInput = document.getElementById("success");
+        const globalPenInput = document.getElementById("penalty");
+        let globalSucc = parseInt(globalSuccInput?.value || "0", 10);
+        let globalPen = parseInt(globalPenInput?.value || "0", 10);
+        if (isNaN(globalSucc)) globalSucc = 0;
+        if (isNaN(globalPen)) globalPen = 0;
+
+        const specialInput = document.getElementById("special");
+        const specialStr = specialInput ? specialInput.value || "" : "";
+
+        performRoll({
+          total: value,
+          specialStr,
+          success: globalSucc + statBonus, // +1 success if box checked
+          penalty: globalPen,
+        });
+      });
+    }
+  });
+}
+
+function updateStatDots(row, value) {
+  const dots = row.querySelectorAll(".stat-dot");
+  dots.forEach((dot) => {
+    const idx = parseInt(dot.dataset.index || "0", 10);
+    if (idx <= value) dot.classList.add("active");
+    else dot.classList.remove("active");
+  });
 }
