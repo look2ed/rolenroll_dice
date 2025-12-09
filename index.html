@@ -100,7 +100,7 @@
             ตัวอย่าง:<br>
             • <code>Total dice: 5</code> → เต๋าปกติ 5 ลูก <br>
             • <code>Total dice: 5</code>, <code>Special dice: a1, n1</code>
-            → เต๋าปกติ จำนวน 3 ลูก, เต๋าบัฟ (+ 1 หน้า) จำนวน 1 ลูก, เต๋าดีบัฟ (- 1 หน้า) จำนวน 1 ลูก
+            → เต๋าปกติ จำนวน 3 ลูก, เต๋าบัฟ (+ 1 หน้า) จำนวน 1 ลูก, เต๋าดีบัฟ 1 ลูก (มี - 2 หน้า)
           </p>
         </div>
 
@@ -394,209 +394,745 @@
 
       <!-- ===== General Ability ===== -->
       <h3 class="sheet-section-title">General Ability</h3>
-      <p class="sheet-subtitle">
-      
-      </p>
 
-      <div class="stat-section">
-        <!-- General Education (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="edu" data-attr="int">
-          <span class="stat-label">General Education (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
+      <section class="sheet-section">
+        <!-- ===== Academic ===== -->
+        <div class="ability-section">
+          <h3>Academic</h3>
+          <div class="ability-grid">
+
+            <!-- General Education (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="general-education" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">General Education</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Search (APT) -->
+            <div class="stat-row" data-role="skill" data-skill="search" data-attr="apt">
+              <div class="stat-label">
+                <span class="stat-name">Search</span>
+                <span class="stat-tag">(APT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- History (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="history" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">History</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Art (DEX/INT) -->
+            <div class="stat-row" data-role="skill" data-skill="art" data-attr="dex" data-alt-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Art</span>
+                <span class="stat-tag">(DEX / INT, use higher)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Medicine (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="medicine" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Medicine</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Herb (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="herb" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Herb</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- First Aid (APT) -->
+            <div class="stat-row" data-role="skill" data-skill="first-aid" data-attr="apt">
+              <div class="stat-label">
+                <span class="stat-name">First Aid</span>
+                <span class="stat-tag">(APT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Law (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="law" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Law</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Electronic (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="electronic" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Electronic</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Mechanical (INT) -->
+            <div class="stat-row" data-role="skill" data-skill="mechanical" data-attr="int">
+              <div class="stat-label">
+                <span class="stat-name">Mechanical</span>
+                <span class="stat-tag">(INT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Craft (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="craft" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Craft</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
           </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
         </div>
 
-        <!-- Search (APT) -->
-        <div class="stat-row" data-role="skill" data-skill="search" data-attr="apt">
-          <span class="stat-label">Search (APT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
+        <!-- ===== Intuition & Trained ===== -->
+        <div class="ability-section">
+          <h3>Intuition &amp; Trained</h3>
+          <div class="ability-grid">
+
+            <!-- Occult (SAN) -->
+            <div class="stat-row" data-role="skill" data-skill="occult" data-attr="san">
+              <div class="stat-label">
+                <span class="stat-name">Occult</span>
+                <span class="stat-tag">(SAN)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Perception (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="perception" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Perception</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Hide & Seek (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="hide-seek" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Hide &amp; Seek</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Persuade (RHE) -->
+            <div class="stat-row" data-role="skill" data-skill="persuade" data-attr="rhe">
+              <div class="stat-label">
+                <span class="stat-name">Persuade</span>
+                <span class="stat-tag">(RHE)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Consider (EGO) -->
+            <div class="stat-row" data-role="skill" data-skill="consider" data-attr="ego">
+              <div class="stat-label">
+                <span class="stat-name">Consider</span>
+                <span class="stat-tag">(EGO)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Empathy (APT) -->
+            <div class="stat-row" data-role="skill" data-skill="empathy" data-attr="apt">
+              <div class="stat-label">
+                <span class="stat-name">Empathy</span>
+                <span class="stat-tag">(APT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- BET (RHE) -->
+            <div class="stat-row" data-role="skill" data-skill="bet" data-attr="rhe">
+              <div class="stat-label">
+                <span class="stat-name">BET</span>
+                <span class="stat-tag">(RHE)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Sense of lie (APT) -->
+            <div class="stat-row" data-role="skill" data-skill="sense-of-lie" data-attr="apt">
+              <div class="stat-label">
+                <span class="stat-name">Sense of Lie</span>
+                <span class="stat-tag">(APT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Intimidate (CHA) -->
+            <div class="stat-row" data-role="skill" data-skill="intimidate" data-attr="cha">
+              <div class="stat-label">
+                <span class="stat-name">Intimidate</span>
+                <span class="stat-tag">(CHA)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Survival (APT) -->
+            <div class="stat-row" data-role="skill" data-skill="survival" data-attr="apt">
+              <div class="stat-label">
+                <span class="stat-name">Survival</span>
+                <span class="stat-tag">(APT)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
           </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
         </div>
 
-        <!-- History (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="history" data-attr="int">
-          <span class="stat-label">History (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+        <!-- ===== Physical Skills ===== -->
+        <div class="ability-section">
+          <h3>Physical Skills</h3>
+          <div class="ability-grid">
 
-        <!-- Art (DEX/INT) -->
-        <div class="stat-row" data-role="skill" data-skill="art" data-attr="dex" data-alt-attr="int">
-          <span class="stat-label">Art (DEX / INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Climb (STR) -->
+            <div class="stat-row" data-role="skill" data-skill="climb" data-attr="str">
+              <div class="stat-label">
+                <span class="stat-name">Climb</span>
+                <span class="stat-tag">(STR)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Medicine (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="medicine" data-attr="int">
-          <span class="stat-label">Medicine (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Stealth (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="stealth" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Stealth</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Herb (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="herb" data-attr="int">
-          <span class="stat-label">Herb (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Brawl (STR/DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="brawl" data-attr="str" data-alt-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Brawl</span>
+                <span class="stat-tag">(STR / DEX, use higher)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- First Aid (APT) -->
-        <div class="stat-row" data-role="skill" data-skill="firstaid" data-attr="apt">
-          <span class="stat-label">First Aid (APT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Weapons (STR) -->
+            <div class="stat-row" data-role="skill" data-skill="weapons" data-attr="str">
+              <div class="stat-label">
+                <span class="stat-name">Weapons</span>
+                <span class="stat-tag">(STR)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Law (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="law" data-attr="int">
-          <span class="stat-label">Law (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Sword play (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="sword-play" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Sword Play</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Electronic (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="electronic" data-attr="int">
-          <span class="stat-label">Electronic (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Throwing (STR) -->
+            <div class="stat-row" data-role="skill" data-skill="throwing" data-attr="str">
+              <div class="stat-label">
+                <span class="stat-name">Throwing</span>
+                <span class="stat-tag">(STR)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Mechanical (INT) -->
-        <div class="stat-row" data-role="skill" data-skill="mechanical" data-attr="int">
-          <span class="stat-label">Mechanical (INT)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
-          </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
-        </div>
+            <!-- Shooting weapon (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="shooting-weapon" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Shooting Weapon</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
 
-        <!-- Craft (DEX) -->
-        <div class="stat-row" data-role="skill" data-skill="craft" data-attr="dex">
-          <span class="stat-label">Craft (DEX)</span>
-          <div class="stat-dots">
-            <button type="button" class="stat-dot" data-index="1"></button>
-            <button type="button" class="stat-dot" data-index="2"></button>
-            <button type="button" class="stat-dot" data-index="3"></button>
-            <button type="button" class="stat-dot" data-index="4"></button>
-            <button type="button" class="stat-dot" data-index="5"></button>
-            <button type="button" class="stat-dot" data-index="6"></button>
+            <!-- Reflex (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="reflex" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Reflex</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Larceny (DEX) -->
+            <div class="stat-row" data-role="skill" data-skill="larceny" data-attr="dex">
+              <div class="stat-label">
+                <span class="stat-name">Larceny</span>
+                <span class="stat-tag">(DEX)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
+            <!-- Athlete (STR) -->
+            <div class="stat-row" data-role="skill" data-skill="athlete" data-attr="str">
+              <div class="stat-label">
+                <span class="stat-name">Athlete</span>
+                <span class="stat-tag">(STR)</span>
+              </div>
+              <div class="stat-dots">
+                <button type="button" class="stat-dot" data-index="1"></button>
+                <button type="button" class="stat-dot" data-index="2"></button>
+                <button type="button" class="stat-dot" data-index="3"></button>
+                <button type="button" class="stat-dot" data-index="4"></button>
+                <button type="button" class="stat-dot" data-index="5"></button>
+                <button type="button" class="stat-dot" data-index="6"></button>
+              </div>
+              <div class="stat-controls">
+                <label class="stat-succeed-label">
+                  <input type="checkbox" class="stat-succeed">
+                  +1 success
+                </label>
+                <button type="button" class="stat-roll-btn">Roll</button>
+              </div>
+            </div>
+
           </div>
-          <label class="stat-bonus">
-            <input type="checkbox" class="stat-succeed">
-            +1 Success
-          </label>
-          <button type="button" class="stat-roll-btn">Roll</button>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 
