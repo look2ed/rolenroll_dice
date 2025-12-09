@@ -523,22 +523,25 @@ function setupStats() {
   const statRows = document.querySelectorAll(".stat-row");
   if (!statRows.length) return;
 
-  const statValues = {}; // e.g. { str: 3, dex: 2 }
+  const statValues = {}; // e.g. { Strength: 3 }
 
   statRows.forEach((row) => {
-    const statKey = row.dataset.stat;
+    const statKey = row.dataset.stat || row.dataset.statName || row.dataset.statname;
     if (!statKey) return;
 
     statValues[statKey] = 0;
 
     const dots = row.querySelectorAll(".stat-dot");
-    dots.forEach((dot) => {
-      const idx = parseInt(dot.dataset.index || "0", 10);
+    dots.forEach((dot, i) => {
+      // support data-index or data-value or fallback to position
+      const idxAttr = dot.dataset.index || dot.dataset.value;
+      const idx = idxAttr ? parseInt(idxAttr, 10) : i + 1;
+      dot.dataset.index = String(idx); // normalize
       dot.addEventListener("click", () => {
         const current = statValues[statKey] || 0;
         let nextVal;
         if (current === idx) {
-          nextVal = idx - 1; // clicking same highest dot lowers by 1
+          nextVal = idx - 1; // clicking highest again lowers by 1
         } else {
           nextVal = idx;
         }
@@ -563,7 +566,8 @@ function setupStats() {
           return;
         }
 
-        const bonusCheckbox = row.querySelector(".stat-bonus-checkbox");
+        // checkbox class aligned with HTML: .stat-succeed
+        const bonusCheckbox = row.querySelector(".stat-succeed");
         let statBonus =
           bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
 
@@ -591,8 +595,9 @@ function setupStats() {
 function updateStatDots(row, value) {
   const dots = row.querySelectorAll(".stat-dot");
   dots.forEach((dot) => {
-    const idx = parseInt(dot.dataset.index || "0", 10);
-    if (idx <= value) dot.classList.add("active");
+    const idxAttr = dot.dataset.index || dot.dataset.value;
+    const idx = idxAttr ? parseInt(idxAttr, 10) : 0;
+    if (idx && idx <= value) dot.classList.add("active");
     else dot.classList.remove("active");
   });
 }
