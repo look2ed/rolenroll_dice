@@ -417,16 +417,19 @@ button:hover {
   background: #111;
 }
 
-/* succeed checkbox (attributes) */
+/* succeed checkbox – use only the box (hide label text) */
 .stat-bonus {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 0;          /* hide the “+1 success” text */
 }
 
 .stat-bonus input {
-  margin-top: 0;
+  margin: 0;
 }
 
 /* roll button for each stat */
@@ -444,43 +447,46 @@ button:hover {
 
 /* ===== General Ability sections ===== */
 
+/* 3 columns for the three ability sections:
+   Academic, Intuition & Trained, Physical Skills */
 .sheet-section {
   margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .sheet-section {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .sheet-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .ability-section {
   margin-top: 0.25rem;
 }
 
-.ability-section h3 {
+.ability-section h3,
+.ga-title {
   font-size: 0.95rem;
   margin: 0.25rem 0 0.4rem;
   font-weight: 700;
 }
 
-/* 3-column grid for General Ability (Academic / Intuition / Physical) */
+/* inside each section, skills are stacked vertically */
 .ability-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-/* On smaller screens, fewer columns */
-@media (max-width: 1100px) {
-  .ability-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 800px) {
-  .ability-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Override stat-row inside ability grid: make them card-like, vertical layout */
+/* card-style stat rows inside ability sections */
 .ability-grid .stat-row {
   display: flex;
   flex-direction: column;
@@ -493,7 +499,7 @@ button:hover {
   grid-template-columns: none; /* disable grid layout */
 }
 
-/* label for skills: name + tag stacked or inline */
+/* label for skills: name + tag stacked */
 .ability-grid .stat-label {
   display: flex;
   flex-direction: column;
@@ -521,15 +527,20 @@ button:hover {
   margin-top: 0.1rem;
 }
 
-.stat-succeed-label {
-  display: flex;
+/* “success” checkbox for skills – box only */
+.stat-succeed-label,
+.stat-controls .stat-bonus {
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 0;         /* hide text */
 }
 
 .stat-succeed-label input {
-  margin-top: 0;
+  margin: 0;
 }
 
 /* Use same roll button style inside cards */

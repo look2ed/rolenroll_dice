@@ -211,7 +211,7 @@
           </div>
           <div class="sheet-row">
             <label>Will Power</label>
-            <input type="number" id="char-will" min="0" value="0">
+            <input type="number" id="char-willpower" min="0" value="0">
           </div>
           <div class="sheet-row">
             <label>Mental</label>
@@ -395,10 +395,12 @@
       <!-- ===== General Ability ===== -->
       <h3 class="sheet-section-title">General Ability</h3>
 
-      <section class="sheet-section">
+      <!-- 3 columns: Academic / Intuition & Trained / Physical Skills -->
+      <div class="ga-columns">
+
         <!-- ===== Academic ===== -->
         <div class="ability-section">
-          <h3>Academic</h3>
+          <h4 class="ga-title">Academic</h4>
           <div class="ability-grid">
 
             <!-- General Education (INT) -->
@@ -416,7 +418,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -439,7 +441,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -462,7 +464,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -485,7 +487,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -508,7 +510,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -531,7 +533,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -554,7 +556,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -577,7 +579,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -600,7 +602,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -623,7 +625,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -646,7 +648,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -659,7 +661,7 @@
 
         <!-- ===== Intuition & Trained ===== -->
         <div class="ability-section">
-          <h3>Intuition &amp; Trained</h3>
+          <h4 class="ga-title">Intuition &amp; Trained</h4>
           <div class="ability-grid">
 
             <!-- Occult (SAN) -->
@@ -677,7 +679,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -700,7 +702,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -723,7 +725,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -746,7 +748,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -769,7 +771,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -792,7 +794,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -815,7 +817,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -838,7 +840,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -861,7 +863,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -884,7 +886,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -897,7 +899,7 @@
 
         <!-- ===== Physical Skills ===== -->
         <div class="ability-section">
-          <h3>Physical Skills</h3>
+          <h4 class="ga-title">Physical Skills</h4>
           <div class="ability-grid">
 
             <!-- Climb (STR) -->
@@ -915,7 +917,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -938,7 +940,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -961,7 +963,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -984,7 +986,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1007,7 +1009,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1030,7 +1032,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1053,7 +1055,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1076,7 +1078,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1099,7 +1101,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1122,7 +1124,7 @@
                 <button type="button" class="stat-dot" data-index="6"></button>
               </div>
               <div class="stat-controls">
-                <label class="stat-succeed-label">
+                <label class="stat-bonus">
                   <input type="checkbox" class="stat-succeed">
                   +1 success
                 </label>
@@ -1132,7 +1134,8 @@
 
           </div>
         </div>
-      </section>
+
+      </div> <!-- /.ga-columns -->
     </div>
   </div>
 

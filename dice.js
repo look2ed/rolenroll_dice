@@ -9,13 +9,13 @@ const STORAGE_KEY = "rolenroll_sheet_state_v1";
 
 // central sheet state
 const sheetState = {
-  attrs: {},    // e.g. { str: 3, dex: 2, int: 4, ... }
-  skills: {},   // e.g. { search: 2, art: 1, ... }
-  globals: {}   // e.g. { name, health, defense, willpower }
+  attrs: {},   // e.g. { str: 3, dex: 2, int: 4, ... }
+  skills: {},  // e.g. { search: 2, art: 1, ... }
+  globals: {}  // e.g. { name, health, healthMax, defense, will }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1) Load saved sheet state FIRST
+  // 1) Load saved sheet state FIRST (so attrs/skills are ready)
   loadSheetStateFromStorage();
 
   // 2) Form submit
@@ -76,14 +76,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 6) Character-sheet hooks (use already-loaded state)
+  // 6) Character-sheet hooks (after state is loaded)
   setupMentalHearts();
   setupStats();
 
   // 7) Header field persistence
   setupGlobalFieldPersistence();
 
-  // 8) Initial empty history render
+  // 8) Initial history render
   renderHistory();
 });
 
@@ -281,7 +281,7 @@ function faceToDieHtml(f) {
   return `<span class="role-roll-die ${extraClass}">${symbol}</span>`;
 }
 
-// ---------- parse "Special dice" like /rr (aX / nY) ----------
+// ---------- parse "Special dice" like aX / nY ----------
 
 function parseSpecialDice(str) {
   const configs = [];
@@ -605,15 +605,15 @@ function setupSkillRow(row) {
   rollBtn.addEventListener("click", () => {
     const skillVal = sheetState.skills[skillKey] || 0;
 
-    const primaryAttrKey = row.dataset.attr;          // e.g. "int", "apt"
-    const altAttrKey = row.dataset.altAttr || row.dataset.altattr; // e.g. "dex" for Art
+    const primaryAttrKey = row.dataset.attr; // e.g. "int", "apt"
+    const altAttrKey = row.dataset.altAttr || row.dataset.altattr; // e.g. "dex" for Art or Brawl
 
     let attrDice = 0;
     if (primaryAttrKey) {
       const primary = sheetState.attrs[primaryAttrKey] || 0;
       if (altAttrKey) {
         const alt = sheetState.attrs[altAttrKey] || 0;
-        attrDice = Math.max(primary, alt); // Art: max(DEX, INT)
+        attrDice = Math.max(primary, alt); // multi-attr: max(primary, alt)
       } else {
         attrDice = primary;
       }
@@ -698,11 +698,13 @@ function saveSheetStateToStorage() {
 
     const globals = {};
 
+    // 👉 Make sure IDs match your HTML
     const globalMap = [
-      { id: "char-name", key: "name" },
-      { id: "char-health", key: "health" },
-      { id: "char-defense", key: "defense" },
-      { id: "char-willpower", key: "willpower" }
+      { id: "char-name",       key: "name" },
+      { id: "char-health",     key: "health" },
+      { id: "char-health-max", key: "healthMax" },
+      { id: "char-defense",    key: "defense" },
+      { id: "char-will",       key: "will" }
     ];
 
     globalMap.forEach(({ id, key }) => {
@@ -715,7 +717,6 @@ function saveSheetStateToStorage() {
     sheetState.globals = globals;
 
     const payload = {
-      // IMPORTANT: keep same objects, don't store DOM stuff
       attrs: sheetState.attrs || {},
       skills: sheetState.skills || {},
       hearts,
@@ -735,7 +736,7 @@ function loadSheetStateFromStorage() {
 
     const data = JSON.parse(raw);
 
-    // 🔴 IMPORTANT FIX: mutate existing objects, do NOT reassign
+    // Mutate existing objects, do NOT reassign
     if (data.attrs && typeof data.attrs === "object") {
       Object.assign(sheetState.attrs, data.attrs);
     }
@@ -744,23 +745,13 @@ function loadSheetStateFromStorage() {
     }
     sheetState.globals = data.globals || {};
 
-    // restore hearts (classes only; events added later in setupMentalHearts)
-    if (Array.isArray(data.hearts)) {
-      const hearts = document.querySelectorAll(".mental-heart");
-      hearts.forEach((btn, idx) => {
-        const on = data.hearts[idx];
-        btn.classList.remove("on", "off");
-        if (on === false) btn.classList.add("off");
-        else btn.classList.add("on");
-      });
-    }
-
     // restore header fields
     const globalMap = [
-      { id: "char-name", key: "name" },
-      { id: "char-health", key: "health" },
-      { id: "char-defense", key: "defense" },
-      { id: "char-willpower", key: "willpower" }
+      { id: "char-name",       key: "name" },
+      { id: "char-health",     key: "health" },
+      { id: "char-health-max", key: "healthMax" },
+      { id: "char-defense",    key: "defense" },
+      { id: "char-will",       key: "will" }
     ];
 
     globalMap.forEach(({ id, key }) => {
@@ -770,7 +761,17 @@ function loadSheetStateFromStorage() {
       }
     });
 
-    // dots are re-applied in setupStats()
+    // restore hearts (classes only; click handlers added later)
+    if (Array.isArray(data.hearts)) {
+      const hearts = document.querySelectorAll(".mental-heart");
+      hearts.forEach((btn, idx) => {
+        const on = data.hearts[idx];
+        btn.classList.remove("on", "off");
+        if (on === false) btn.classList.add("off");
+        else btn.classList.add("on");
+      });
+    }
+    // attribute/skill dots are re-applied in setupStats()
   } catch (e) {
     console.warn("Could not load sheet state:", e);
   }
@@ -779,10 +780,11 @@ function loadSheetStateFromStorage() {
 // watch header fields and save when user edits them
 function setupGlobalFieldPersistence() {
   const globalMap = [
-    { id: "char-name", key: "name" },
-    { id: "char-health", key: "health" },
-    { id: "char-defense", key: "defense" },
-    { id: "char-willpower", key: "willpower" }
+    { id: "char-name",       key: "name" },
+    { id: "char-health",     key: "health" },
+    { id: "char-health-max", key: "healthMax" },
+    { id: "char-defense",    key: "defense" },
+    { id: "char-will",       key: "will" }
   ];
 
   globalMap.forEach(({ id, key }) => {
