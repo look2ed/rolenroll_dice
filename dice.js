@@ -10,6 +10,19 @@ const sheetState = {
   skills: {}   // e.g. { search: 2, art: 1, ... }
 };
 
+// interactive roll state for step-by-step rerolls
+let currentRollState = null;
+// shape:
+// {
+//   totalDice: number,
+//   specialStr: string,
+//   success: number,
+//   penalty: number,
+//   rounds: [ [ {config, roll, face}, ... ], ... ],
+//   allFaces: [ "1", "R", "+", ... ],
+//   pendingConfigs: [ {kind, plusCount?, minusCount?}, ... ]
+// }
+
 document.addEventListener("DOMContentLoaded", () => {
   // form submit
   const form = document.getElementById("dice-form");
@@ -67,6 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const isNowHidden = historyPanel.classList.toggle("hidden");
       historyBtn.setAttribute("aria-expanded", (!isNowHidden).toString());
     });
+  }
+
+  // reroll button (for stepwise R&R)
+  const rerollBtn = document.getElementById("reroll-button");
+  if (rerollBtn) {
+    rerollBtn.addEventListener("click", onRerollClick);
   }
 
   // initial empty history render
@@ -160,61 +179,57 @@ function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-// ---------- main pool roller with multi-round display ----------
+// ---------- ONE ROUND roller (used for base roll & each reroll) ----------
 
-function rollRolenrollPoolBrowser(dice) {
-  if (!Array.isArray(dice) || dice.length === 0) {
-    dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
+function rollRound(configArray) {
+  const configs = configArray || [];
+  if (!configs.length) {
+    return { results: [], nextConfigs: [] };
   }
 
-  // rounds[0] = first roll
-  // rounds[1] = rerolls from R in round 0
-  // rounds[2] = rerolls from R in round 1, etc.
-  const rounds = [];
+  // 3D dice visual per round, if available
+  if (window.roll3dDice) {
+    window.roll3dDice(configs.length);
+  }
 
-  let current = dice.map((config) => ({ config }));
-  let safety = 0;
+  const results = [];
+  const nextConfigs = [];
 
-  while (current.length > 0 && safety < 100) {
-    safety++;
-
-    const thisRound = [];
-    const next = [];
-
-    for (const { config } of current) {
-      const value = rollD6();
-      const face = faceForRoll(config, value);
-      thisRound.push({ config, roll: value, face });
-
-      if (face === "R") {
-        // R → another die of the same config in the next round
-        next.push({ config: { ...config } });
-      }
+  for (const conf of configs) {
+    const value = rollD6();
+    const face = faceForRoll(conf, value);
+    results.push({ config: conf, roll: value, face });
+    if (face === "R") {
+      nextConfigs.push({ ...conf }); // same config for reroll
     }
-
-    rounds.push(thisRound);
-    current = next;
   }
 
-  const baseFaces = rounds[0] ? rounds[0].map((r) => r.face) : [];
-  const rerollFaces = rounds.slice(1).flat().map((r) => r.face);
-  const allFaces = baseFaces.concat(rerollFaces);
+  return { results, nextConfigs };
+}
 
-  const scoring = scoreFaces(allFaces);
+// ---------- interactive R&R flow helpers ----------
 
-  const basedScore = baseFaces.reduce(
-    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
-    0
-  );
-  const rerollPoints = rerollFaces.reduce(
-    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
-    0
-  );
-  const plusTokens = allFaces.filter((f) => f === "+").length;
-  const minusTokens = allFaces.filter((f) => f === "-").length;
-  const rerollCount = allFaces.filter((f) => f === "R").length;
+function showRerollUI(count) {
+  const rerollBtn = document.getElementById("reroll-button");
+  const info = document.getElementById("reroll-info");
+  if (rerollBtn) rerollBtn.classList.remove("hidden");
+  if (info) {
+    info.textContent = `You got ${count} reroll dice. Click "Reroll" to roll them.`;
+  }
+}
 
-  // ---- Build HTML: one row per round ----
+function hideRerollUI() {
+  const rerollBtn = document.getElementById("reroll-button");
+  const info = document.getElementById("reroll-info");
+  if (rerollBtn) rerollBtn.classList.add("hidden");
+  if (info) info.textContent = "";
+}
+
+function renderRoundsToResult() {
+  const resultDiv = document.getElementById("result");
+  if (!resultDiv || !currentRollState) return;
+
+  const rounds = currentRollState.rounds || [];
   let html = `
 <div class="role-roll-chat">
   <div class="role-roll-header"><strong>Role&amp;Roll Dice Pool</strong></div>
@@ -223,7 +238,6 @@ function rollRolenrollPoolBrowser(dice) {
   rounds.forEach((round, idx) => {
     if (!round.length) return;
     const facesHtml = round.map((r) => faceToDieHtml(r.face)).join("");
-
     let label = "";
     if (idx === 0) {
       label = "";
@@ -239,19 +253,89 @@ function rollRolenrollPoolBrowser(dice) {
   });
 
   html += `</div>`;
-
-  return {
-    html,
-    scoring,
-    basedScore,
-    rerollPoints,
-    rerollCount,
-    plusTokens,
-    minusTokens,
-  };
+  resultDiv.innerHTML = html;
 }
 
-// Render a single die as HTML span
+// Called when no more R dice → finalize summary + history
+function finalizeCurrentRoll() {
+  if (!currentRollState) return;
+
+  const state = currentRollState;
+  const rounds = state.rounds || [];
+
+  const baseFaces = rounds[0] ? rounds[0].map((r) => r.face) : [];
+  const rerollFaces = rounds.slice(1).flat().map((r) => r.face);
+  const allFaces = baseFaces.concat(rerollFaces);
+
+  const scoring = scoreFaces(allFaces);
+  const { plusCount, minusCount, rerollCount, total } = scoring;
+
+  const basedScore = baseFaces.reduce(
+    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
+    0
+  );
+  const rerollPoints = rerollFaces.reduce(
+    (s, f) => s + (f === "1" || f === "R" ? 1 : 0),
+    0
+  );
+
+  const succ = state.success || 0;
+  const pen = state.penalty || 0;
+
+  let finalTotal = total + succ - pen;
+  if (finalTotal < 0) finalTotal = 0;
+
+  // --- Update Summary UI ---
+
+  const elBase = document.getElementById("based-score");
+  if (elBase) elBase.textContent = basedScore;
+
+  const elRrCount = document.getElementById("rr-count");
+  if (elRrCount) elRrCount.textContent = rerollCount;
+
+  const elRrPoints = document.getElementById("rr-points");
+  if (elRrPoints) elRrPoints.textContent = rerollPoints;
+
+  const elPlus = document.getElementById("plus-tokens");
+  if (elPlus) elPlus.textContent = plusCount;
+
+  const elMinus = document.getElementById("minus-tokens");
+  if (elMinus) elMinus.textContent = minusCount;
+
+  const elSucc = document.getElementById("stat-success");
+  if (elSucc) elSucc.textContent = succ;
+
+  const elPen = document.getElementById("stat-penalty");
+  if (elPen) elPen.textContent = pen;
+
+  const elTotal = document.getElementById("total-points");
+  if (elTotal) elTotal.textContent = finalTotal;
+
+  // --- Add to history ---
+
+  const entry = {
+    time: Date.now(),
+    totalDice: state.totalDice,
+    special: (state.specialStr || "").trim(),
+    success: succ,
+    penalty: pen,
+    diceTotal: total,
+    finalTotal,
+    baseScore: basedScore,
+    rerollPoints,
+    rerollCount,
+    plusTokens: plusCount,
+    minusTokens: minusCount
+  };
+
+  rollHistory.unshift(entry);
+  if (rollHistory.length > 50) rollHistory.length = 50;
+
+  renderHistory();
+}
+
+// ---------- Render a single die as HTML span ----------
+
 function faceToDieHtml(f) {
   let symbol = "&nbsp;";
   let extraClass = "";
@@ -362,16 +446,22 @@ function renderHistory() {
 // ---------- core roll executor (used by form + stats) ----------
 
 function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
+  // start a NEW interactive roll, reset old state
+  hideRerollUI();
+  currentRollState = null;
+
   const totalNum = parseInt(total ?? 0, 10);
   if (isNaN(totalNum) || totalNum <= 0) {
     alert("Please enter a valid total number of dice (at least 1).");
     return;
   }
 
-  // 3D dice visual (if available)
-  if (window.roll3dDice) {
-    window.roll3dDice(totalNum);
-  }
+  let succ = parseInt(success ?? 0, 10);
+  let pen = parseInt(penalty ?? 0, 10);
+  if (isNaN(succ)) succ = 0;
+  if (isNaN(pen)) pen = 0;
+  if (succ < 0) succ = 0;
+  if (pen < 0) pen = 0;
 
   let specialConfigs;
   try {
@@ -397,80 +487,34 @@ function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
     return;
   }
 
-  // Roll dice
-  const {
-    html,
-    scoring,
-    basedScore,
-    rerollPoints,
-    rerollCount,
-    plusTokens,
-    minusTokens,
-  } = rollRolenrollPoolBrowser(dice);
-
-  // clamp success / penalty
-  let succ = parseInt(success ?? 0, 10);
-  let pen = parseInt(penalty ?? 0, 10);
-  if (isNaN(succ)) succ = 0;
-  if (isNaN(pen)) pen = 0;
-  if (succ < 0) succ = 0;
-  if (pen < 0) pen = 0;
-
-  // Dice total from scoring.total, then apply stats
-  const diceTotal = scoring.total;
-  let finalTotal = diceTotal + succ - pen;
-  if (finalTotal < 0) finalTotal = 0;
-
-  // Show dice faces
+  // clear previous visual result
   const resultDiv = document.getElementById("result");
-  if (resultDiv) resultDiv.innerHTML = html;
+  if (resultDiv) resultDiv.innerHTML = "";
 
-  // Summary
-  const elBase = document.getElementById("based-score");
-  if (elBase) elBase.textContent = basedScore;
-
-  const elRrCount = document.getElementById("rr-count");
-  if (elRrCount) elRrCount.textContent = rerollCount;
-
-  const elRrPoints = document.getElementById("rr-points");
-  if (elRrPoints) elRrPoints.textContent = rerollPoints;
-
-  const elPlus = document.getElementById("plus-tokens");
-  if (elPlus) elPlus.textContent = plusTokens;
-
-  const elMinus = document.getElementById("minus-tokens");
-  if (elMinus) elMinus.textContent = minusTokens;
-
-  const elSucc = document.getElementById("stat-success");
-  if (elSucc) elSucc.textContent = succ;
-
-  const elPen = document.getElementById("stat-penalty");
-  if (elPen) elPen.textContent = pen;
-
-  const elTotal = document.getElementById("total-points");
-  if (elTotal) elTotal.textContent = finalTotal;
-
-  // ---- Add to history ----
-  const entry = {
-    time: Date.now(),
+  // init state
+  currentRollState = {
     totalDice: totalNum,
-    special: (specialStr || "").trim(),
+    specialStr: specialStr || "",
     success: succ,
     penalty: pen,
-    diceTotal,
-    finalTotal,
-    baseScore: basedScore,
-    rerollPoints,
-    rerollCount,
-    plusTokens,
-    minusTokens,
+    rounds: [],
+    allFaces: [],
+    pendingConfigs: []
   };
 
-  // latest roll at top
-  rollHistory.unshift(entry);
-  if (rollHistory.length > 50) rollHistory.length = 50;
+  // base round
+  const { results, nextConfigs } = rollRound(dice);
+  currentRollState.rounds.push(results);
+  currentRollState.pendingConfigs = nextConfigs;
+  currentRollState.allFaces.push(...results.map((r) => r.face));
 
-  renderHistory();
+  renderRoundsToResult();
+
+  if (nextConfigs.length > 0) {
+    showRerollUI(nextConfigs.length);
+  } else {
+    finalizeCurrentRoll();
+  }
 }
 
 // ---------- form handler ----------
@@ -488,8 +532,8 @@ function onSubmit(e) {
 
   const total = totalInput ? totalInput.value : "0";
   const specialStr = specialInput ? specialInput.value : "";
-  let success = successInput ? successInput.value : "0";
-  let penalty = penaltyInput ? penaltyInput.value : "0";
+  const success = successInput ? successInput.value : "0";
+  const penalty = penaltyInput ? penaltyInput.value : "0";
 
   performRoll({
     total,
@@ -497,6 +541,27 @@ function onSubmit(e) {
     success,
     penalty,
   });
+}
+
+// ---------- reroll button handler ----------
+
+function onRerollClick() {
+  if (!currentRollState || !currentRollState.pendingConfigs.length) return;
+
+  const { results, nextConfigs } = rollRound(currentRollState.pendingConfigs);
+
+  currentRollState.rounds.push(results);
+  currentRollState.pendingConfigs = nextConfigs;
+  currentRollState.allFaces.push(...results.map((r) => r.face));
+
+  renderRoundsToResult();
+
+  if (nextConfigs.length > 0) {
+    showRerollUI(nextConfigs.length);
+  } else {
+    hideRerollUI();
+    finalizeCurrentRoll();
+  }
 }
 
 // ---------- Character sheet: mental hearts ----------
@@ -546,7 +611,7 @@ function setupAttrRow(row) {
   const key = row.dataset.stat;
   if (!key) return;
 
-  sheetState.attrs[key] = 0;
+  sheetState.attrs[key] = sheetState.attrs[key] ?? 0;
   initDotsForRow(row, sheetState.attrs, key);
 
   const rollBtn = row.querySelector(".stat-roll-btn");
@@ -562,7 +627,7 @@ function setupAttrRow(row) {
     }
 
     const bonusCheckbox = row.querySelector(".stat-succeed");
-    let statBonus =
+    const statBonus =
       bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
 
     const globalSuccInput = document.getElementById("success");
@@ -588,7 +653,7 @@ function setupSkillRow(row) {
   const skillKey = row.dataset.skill || row.dataset.stat;
   if (!skillKey) return;
 
-  sheetState.skills[skillKey] = 0;
+  sheetState.skills[skillKey] = sheetState.skills[skillKey] ?? 0;
   initDotsForRow(row, sheetState.skills, skillKey);
 
   const rollBtn = row.querySelector(".stat-roll-btn");
@@ -620,7 +685,7 @@ function setupSkillRow(row) {
     }
 
     const bonusCheckbox = row.querySelector(".stat-succeed");
-    let statBonus =
+    const statBonus =
       bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
 
     const globalSuccInput = document.getElementById("success");
