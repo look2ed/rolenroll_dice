@@ -4,6 +4,12 @@
 
 let rollHistory = [];
 
+// central sheet state
+const sheetState = {
+  attrs: {},   // e.g. { str: 3, dex: 2, int: 4, ... }
+  skills: {}   // e.g. { search: 2, art: 1, ... }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   // form submit
   const form = document.getElementById("dice-form");
@@ -517,79 +523,150 @@ function setupMentalHearts() {
   });
 }
 
-// ---------- Character sheet: stats (dots + roll) ----------
+// ---------- Character sheet: stats (attributes + skills) ----------
 
 function setupStats() {
   const statRows = document.querySelectorAll(".stat-row");
   if (!statRows.length) return;
 
-  const statValues = {}; // e.g. { Strength: 3 }
-
   statRows.forEach((row) => {
-    const statKey = row.dataset.stat || row.dataset.statName || row.dataset.statname;
-    if (!statKey) return;
+    const role = row.dataset.role || "attr";
 
-    statValues[statKey] = 0;
-
-    const dots = row.querySelectorAll(".stat-dot");
-    dots.forEach((dot, i) => {
-      // support data-index or data-value or fallback to position
-      const idxAttr = dot.dataset.index || dot.dataset.value;
-      const idx = idxAttr ? parseInt(idxAttr, 10) : i + 1;
-      dot.dataset.index = String(idx); // normalize
-      dot.addEventListener("click", () => {
-        const current = statValues[statKey] || 0;
-        let nextVal;
-        if (current === idx) {
-          nextVal = idx - 1; // clicking highest again lowers by 1
-        } else {
-          nextVal = idx;
-        }
-        if (nextVal < 0) nextVal = 0;
-        if (nextVal > 6) nextVal = 6;
-        statValues[statKey] = nextVal;
-        updateStatDots(row, nextVal);
-      });
-    });
-
-    // initial visual
-    updateStatDots(row, statValues[statKey]);
-
-    const rollBtn = row.querySelector(".stat-roll-btn");
-    if (rollBtn) {
-      rollBtn.addEventListener("click", () => {
-        const value = statValues[statKey] || 0;
-        if (value <= 0) {
-          alert(
-            "This attribute has 0 points. Click the dots to set points before rolling."
-          );
-          return;
-        }
-
-        // checkbox class aligned with HTML: .stat-succeed
-        const bonusCheckbox = row.querySelector(".stat-succeed");
-        let statBonus =
-          bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
-
-        const globalSuccInput = document.getElementById("success");
-        const globalPenInput = document.getElementById("penalty");
-        let globalSucc = parseInt(globalSuccInput?.value || "0", 10);
-        let globalPen = parseInt(globalPenInput?.value || "0", 10);
-        if (isNaN(globalSucc)) globalSucc = 0;
-        if (isNaN(globalPen)) globalPen = 0;
-
-        const specialInput = document.getElementById("special");
-        const specialStr = specialInput ? specialInput.value || "" : "";
-
-        performRoll({
-          total: value,
-          specialStr,
-          success: globalSucc + statBonus, // +1 success if box checked
-          penalty: globalPen,
-        });
-      });
+    if (role === "skill") {
+      setupSkillRow(row);
+    } else {
+      setupAttrRow(row);
     }
   });
+}
+
+// --- helpers for attributes and skills ---
+
+function setupAttrRow(row) {
+  const key = row.dataset.stat;
+  if (!key) return;
+
+  sheetState.attrs[key] = 0;
+  initDotsForRow(row, sheetState.attrs, key);
+
+  const rollBtn = row.querySelector(".stat-roll-btn");
+  if (!rollBtn) return;
+
+  rollBtn.addEventListener("click", () => {
+    const value = sheetState.attrs[key] || 0;
+    if (value <= 0) {
+      alert(
+        "This attribute has 0 points. Click the dots to set points before rolling."
+      );
+      return;
+    }
+
+    const bonusCheckbox = row.querySelector(".stat-succeed");
+    let statBonus =
+      bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
+
+    const globalSuccInput = document.getElementById("success");
+    const globalPenInput = document.getElementById("penalty");
+    let globalSucc = parseInt(globalSuccInput?.value || "0", 10);
+    let globalPen = parseInt(globalPenInput?.value || "0", 10);
+    if (isNaN(globalSucc)) globalSucc = 0;
+    if (isNaN(globalPen)) globalPen = 0;
+
+    const specialInput = document.getElementById("special");
+    const specialStr = specialInput ? specialInput.value || "" : "";
+
+    performRoll({
+      total: value,
+      specialStr,
+      success: globalSucc + statBonus,
+      penalty: globalPen,
+    });
+  });
+}
+
+function setupSkillRow(row) {
+  const skillKey = row.dataset.skill || row.dataset.stat;
+  if (!skillKey) return;
+
+  sheetState.skills[skillKey] = 0;
+  initDotsForRow(row, sheetState.skills, skillKey);
+
+  const rollBtn = row.querySelector(".stat-roll-btn");
+  if (!rollBtn) return;
+
+  rollBtn.addEventListener("click", () => {
+    const skillVal = sheetState.skills[skillKey] || 0;
+
+    const primaryAttrKey = row.dataset.attr;          // e.g. "int", "apt"
+    const altAttrKey = row.dataset.altAttr || row.dataset.altattr; // e.g. "int" for Art
+
+    let attrDice = 0;
+    if (primaryAttrKey) {
+      const primary = sheetState.attrs[primaryAttrKey] || 0;
+      if (altAttrKey) {
+        const alt = sheetState.attrs[altAttrKey] || 0;
+        attrDice = Math.max(primary, alt); // Art: max(DEX, INT)
+      } else {
+        attrDice = primary;
+      }
+    }
+
+    const totalDice = skillVal + attrDice;
+    if (totalDice <= 0) {
+      alert(
+        "This skill currently has 0 dice. Increase the skill or its linked Attribute first."
+      );
+      return;
+    }
+
+    const bonusCheckbox = row.querySelector(".stat-succeed");
+    let statBonus =
+      bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
+
+    const globalSuccInput = document.getElementById("success");
+    const globalPenInput = document.getElementById("penalty");
+    let globalSucc = parseInt(globalSuccInput?.value || "0", 10);
+    let globalPen = parseInt(globalPenInput?.value || "0", 10);
+    if (isNaN(globalSucc)) globalSucc = 0;
+    if (isNaN(globalPen)) globalPen = 0;
+
+    const specialInput = document.getElementById("special");
+    const specialStr = specialInput ? specialInput.value || "" : "";
+
+    performRoll({
+      total: totalDice,
+      specialStr,
+      success: globalSucc + statBonus,
+      penalty: globalPen,
+    });
+  });
+}
+
+// initialize dots & clicking for a single row
+function initDotsForRow(row, store, key) {
+  const dots = row.querySelectorAll(".stat-dot");
+  store[key] = store[key] ?? 0;
+
+  dots.forEach((dot, i) => {
+    const idxAttr = dot.dataset.index || dot.dataset.value;
+    const idx = idxAttr ? parseInt(idxAttr, 10) : i + 1;
+    dot.dataset.index = String(idx);
+    dot.addEventListener("click", () => {
+      const current = store[key] || 0;
+      let nextVal;
+      if (current === idx) {
+        nextVal = idx - 1; // clicking highest again lowers by 1
+      } else {
+        nextVal = idx;
+      }
+      if (nextVal < 0) nextVal = 0;
+      if (nextVal > 6) nextVal = 6;
+      store[key] = nextVal;
+      updateStatDots(row, nextVal);
+    });
+  });
+
+  updateStatDots(row, store[key]);
 }
 
 function updateStatDots(row, value) {
