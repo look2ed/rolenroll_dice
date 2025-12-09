@@ -160,18 +160,25 @@ function rollD6() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-// ---------- main pool roller with multi-round display ----------
+// ---------- main pool roller with automatic rerolls ----------
+//
+// Returns:
+// {
+//   html,          // dice faces rows (all rounds)
+//   scoring,       // from scoreFaces(allFaces)
+//   basedScore,    // points from first-round dice only
+//   rerollPoints,  // points from all later rounds
+//   rerollCount,   // number of R faces
+//   plusTokens,
+//   minusTokens
+// }
 
 function rollRolenrollPoolBrowser(dice) {
   if (!Array.isArray(dice) || dice.length === 0) {
     dice = Array.from({ length: 5 }, () => ({ kind: "normal" }));
   }
 
-  // rounds[0] = first roll
-  // rounds[1] = rerolls from R in round 0
-  // rounds[2] = rerolls from R in round 1, etc.
   const rounds = [];
-
   let current = dice.map((config) => ({ config }));
   let safety = 0;
 
@@ -373,6 +380,13 @@ function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
     window.roll3dDice(totalNum);
   }
 
+  let succ = parseInt(success ?? 0, 10);
+  let pen = parseInt(penalty ?? 0, 10);
+  if (isNaN(succ)) succ = 0;
+  if (isNaN(pen)) pen = 0;
+  if (succ < 0) succ = 0;
+  if (pen < 0) pen = 0;
+
   let specialConfigs;
   try {
     specialConfigs = parseSpecialDice(specialStr || "");
@@ -397,7 +411,7 @@ function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
     return;
   }
 
-  // Roll dice
+  // Roll dice (all rerolls handled inside)
   const {
     html,
     scoring,
@@ -408,15 +422,6 @@ function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
     minusTokens,
   } = rollRolenrollPoolBrowser(dice);
 
-  // clamp success / penalty
-  let succ = parseInt(success ?? 0, 10);
-  let pen = parseInt(penalty ?? 0, 10);
-  if (isNaN(succ)) succ = 0;
-  if (isNaN(pen)) pen = 0;
-  if (succ < 0) succ = 0;
-  if (pen < 0) pen = 0;
-
-  // Dice total from scoring.total, then apply stats
   const diceTotal = scoring.total;
   let finalTotal = diceTotal + succ - pen;
   if (finalTotal < 0) finalTotal = 0;
@@ -488,8 +493,8 @@ function onSubmit(e) {
 
   const total = totalInput ? totalInput.value : "0";
   const specialStr = specialInput ? specialInput.value : "";
-  let success = successInput ? successInput.value : "0";
-  let penalty = penaltyInput ? penaltyInput.value : "0";
+  const success = successInput ? successInput.value : "0";
+  const penalty = penaltyInput ? penaltyInput.value : "0";
 
   performRoll({
     total,
@@ -546,7 +551,7 @@ function setupAttrRow(row) {
   const key = row.dataset.stat;
   if (!key) return;
 
-  sheetState.attrs[key] = 0;
+  sheetState.attrs[key] = sheetState.attrs[key] ?? 0;
   initDotsForRow(row, sheetState.attrs, key);
 
   const rollBtn = row.querySelector(".stat-roll-btn");
@@ -562,7 +567,7 @@ function setupAttrRow(row) {
     }
 
     const bonusCheckbox = row.querySelector(".stat-succeed");
-    let statBonus =
+    const statBonus =
       bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
 
     const globalSuccInput = document.getElementById("success");
@@ -588,7 +593,7 @@ function setupSkillRow(row) {
   const skillKey = row.dataset.skill || row.dataset.stat;
   if (!skillKey) return;
 
-  sheetState.skills[skillKey] = 0;
+  sheetState.skills[skillKey] = sheetState.skills[skillKey] ?? 0;
   initDotsForRow(row, sheetState.skills, skillKey);
 
   const rollBtn = row.querySelector(".stat-roll-btn");
@@ -620,7 +625,7 @@ function setupSkillRow(row) {
     }
 
     const bonusCheckbox = row.querySelector(".stat-succeed");
-    let statBonus =
+    const statBonus =
       bonusCheckbox && bonusCheckbox.checked ? 1 : 0;
 
     const globalSuccInput = document.getElementById("success");
