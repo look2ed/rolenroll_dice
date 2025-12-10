@@ -352,7 +352,7 @@ button:hover {
   content: "♥";
 }
 
-/* red = healthy, black = damaged (or swap if you prefer) */
+/* red = healthy, black = damaged */
 .mental-heart.on {
   color: #e02424;
 }
@@ -417,19 +417,16 @@ button:hover {
   background: #111;
 }
 
-/* succeed checkbox – use only the box (hide label text) */
+/* succeed checkbox (attributes) */
 .stat-bonus {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  font-size: 0;          /* hide the “+1 success” text */
+  gap: 0.25rem;
+  font-size: 0.8rem;
 }
 
 .stat-bonus input {
-  margin: 0;
+  margin-top: 0;
 }
 
 /* roll button for each stat */
@@ -447,13 +444,13 @@ button:hover {
 
 /* ===== General Ability sections ===== */
 
-/* 3 columns for the three ability sections:
-   Academic, Intuition & Trained, Physical Skills */
+/* 3-column layout: Academic | Intuition & Trained | Physical Skills */
 .sheet-section {
   margin-top: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+  align-items: flex-start;
 }
 
 @media (max-width: 1100px) {
@@ -496,7 +493,7 @@ button:hover {
   border-radius: 4px;
   background: #f9f6ef;
   border: 1px solid #e0d4c0;
-  grid-template-columns: none; /* disable grid layout */
+  grid-template-columns: none; /* disable grid inside cards */
 }
 
 /* label for skills: name + tag stacked */
@@ -527,23 +524,22 @@ button:hover {
   margin-top: 0.1rem;
 }
 
-/* “success” checkbox for skills – box only */
-.stat-succeed-label,
-.stat-controls .stat-bonus {
+/* “success” checkbox – just the box, hide text */
+.stat-succeed-label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   padding: 0;
-  font-size: 0;         /* hide text */
+  font-size: 0; /* hides '+1 success' text */
 }
 
 .stat-succeed-label input {
   margin: 0;
 }
 
-/* Use same roll button style inside cards */
+/* same roll button style inside GA cards */
 .ability-grid .stat-roll-btn {
   margin-top: 0;
   padding: 0.2rem 0.6rem;
