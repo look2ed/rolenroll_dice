@@ -497,9 +497,12 @@ button:hover {
 }
 
 /* label for skills: name + tag stacked */
+/* label for skills: name + (ATTR) on the same line */
 .ability-grid .stat-label {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;      /* inline instead of stacked */
+  align-items: baseline;
+  gap: 0.25rem;
   font-weight: 600;
 }
 
@@ -508,7 +511,7 @@ button:hover {
 }
 
 .stat-tag {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #7a6b58;
 }
 
