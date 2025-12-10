@@ -445,7 +445,7 @@ button:hover {
 /* ===== General Ability sections ===== */
 
 /* 3-column layout: Academic | Intuition & Trained | Physical Skills */
-.sheet-section {
+.ga-columns {
   margin-top: 0.5rem;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -454,13 +454,13 @@ button:hover {
 }
 
 @media (max-width: 1100px) {
-  .sheet-section {
+  .ga-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 800px) {
-  .sheet-section {
+  .ga-columns {
     grid-template-columns: minmax(0, 1fr);
   }
 }
