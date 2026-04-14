@@ -17,7 +17,8 @@ const sheetState = {
   skills: {},  // e.g. { search: 2, art: 1, ... }
   globals: {}, // e.g. { name, health, healthMax, defense, will }
   equipment: [],
-  statuses: []
+  statuses: [],
+  items: []
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -100,6 +101,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 11) Buff & debuff block and modal
   setupStatuses();
+
+  // 12) Items block and modal
+  setupItems();
 });
 
 function setupResultModal() {
@@ -577,6 +581,235 @@ function renderStatusList() {
         <div class="status-item-actions">
           <button type="button" class="icon-action-btn" data-status-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "status")}">✎</button>
           <button type="button" class="icon-action-btn equipment-remove-btn" data-status-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "status")}">⌫</button>
+        </div>
+      </div>
+    `)
+    .join("");
+}
+
+function setupItems() {
+  const openBtn = document.getElementById("open-item-modal");
+  const closeBtn = document.getElementById("close-item-modal");
+  const cancelBtn = document.getElementById("cancel-item-btn");
+  const backdrop = document.getElementById("item-modal-backdrop");
+  const form = document.getElementById("item-form");
+  const list = document.getElementById("item-list");
+
+  if (!list || !form) return;
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => openItemModal());
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeItemModal);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", closeItemModal);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener("click", closeItemModal);
+  }
+
+  form.addEventListener("submit", onItemSubmit);
+
+  list.addEventListener("click", (event) => {
+    const actionBtn = event.target.closest("button[data-item-action]");
+    if (!actionBtn) return;
+
+    const id = actionBtn.dataset.id;
+    if (!id) return;
+
+    if (actionBtn.dataset.itemAction === "edit") {
+      const item = sheetState.items.find((entry) => entry.id === id);
+      if (item) openItemModal(item);
+      return;
+    }
+
+    if (actionBtn.dataset.itemAction === "remove") {
+      removeItem(id);
+      return;
+    }
+
+    if (actionBtn.dataset.itemAction === "decrease") {
+      changeItemAmount(id, -1);
+      return;
+    }
+
+    if (actionBtn.dataset.itemAction === "increase") {
+      changeItemAmount(id, 1);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const modal = document.getElementById("item-modal");
+    if (event.key === "Escape" && modal && !modal.classList.contains("hidden")) {
+      closeItemModal();
+    }
+  });
+
+  renderItemList();
+}
+
+function openItemModal(item = null) {
+  const modal = document.getElementById("item-modal");
+  const title = document.getElementById("item-modal-title");
+  const saveBtn = document.getElementById("save-item-btn");
+  const form = document.getElementById("item-form");
+
+  if (!modal || !form) return;
+
+  populateItemForm(item);
+
+  if (title) {
+    title.textContent = item ? "Edit Item" : "Add Item";
+  }
+
+  if (saveBtn) {
+    saveBtn.textContent = item ? "Save" : "Add";
+  }
+
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeItemModal() {
+  const modal = document.getElementById("item-modal");
+  const form = document.getElementById("item-form");
+  const title = document.getElementById("item-modal-title");
+  const saveBtn = document.getElementById("save-item-btn");
+  const idInput = document.getElementById("item-id");
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+
+  if (form) {
+    form.reset();
+  }
+
+  if (idInput) {
+    idInput.value = "";
+  }
+
+  if (title) {
+    title.textContent = "Add Item";
+  }
+
+  if (saveBtn) {
+    saveBtn.textContent = "Add";
+  }
+
+  document.body.style.overflow = "";
+}
+
+function populateItemForm(item) {
+  const idInput = document.getElementById("item-id");
+  const nameInput = document.getElementById("item-name");
+  const detailsInput = document.getElementById("item-details");
+  const amountInput = document.getElementById("item-amount");
+
+  if (!nameInput) return;
+
+  if (!item) {
+    if (idInput) idInput.value = "";
+    nameInput.value = "";
+    if (detailsInput) detailsInput.value = "";
+    if (amountInput) amountInput.value = "1";
+    return;
+  }
+
+  if (idInput) idInput.value = item.id;
+  nameInput.value = item.name || "";
+  if (detailsInput) detailsInput.value = item.details || "";
+  if (amountInput) amountInput.value = item.amount ?? 1;
+}
+
+function onItemSubmit(event) {
+  event.preventDefault();
+
+  const idInput = document.getElementById("item-id");
+  const nameInput = document.getElementById("item-name");
+  const detailsInput = document.getElementById("item-details");
+  const amountInput = document.getElementById("item-amount");
+
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert("Please enter an item name.");
+    return;
+  }
+
+  let amount = parseInt(amountInput?.value || "0", 10);
+  if (Number.isNaN(amount) || amount < 0) amount = 0;
+
+  const existingId = idInput?.value || "";
+  const payload = {
+    id: existingId || `item-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    name,
+    details: detailsInput?.value.trim() || "",
+    amount
+  };
+
+  const existingIndex = sheetState.items.findIndex((item) => item.id === payload.id);
+  if (existingIndex >= 0) {
+    sheetState.items[existingIndex] = payload;
+  } else {
+    sheetState.items.unshift(payload);
+  }
+
+  saveSheetStateToStorage();
+  renderItemList();
+  closeItemModal();
+}
+
+function changeItemAmount(id, delta) {
+  const item = sheetState.items.find((entry) => entry.id === id);
+  if (!item) return;
+
+  const next = Math.max(0, Number(item.amount || 0) + delta);
+  item.amount = next;
+  saveSheetStateToStorage();
+  renderItemList();
+}
+
+function removeItem(id) {
+  sheetState.items = sheetState.items.filter((item) => item.id !== id);
+  saveSheetStateToStorage();
+  renderItemList();
+}
+
+function renderItemList() {
+  const list = document.getElementById("item-list");
+  if (!list) return;
+
+  if (!Array.isArray(sheetState.items) || sheetState.items.length === 0) {
+    list.innerHTML = '<p class="equipment-empty">No items yet.</p>';
+    return;
+  }
+
+  list.innerHTML = sheetState.items
+    .map((item) => `
+      <div class="item-card">
+        <div class="item-main">
+          <div class="equipment-item-info">
+            <span class="equipment-name">${escapeHtml(item.name || "")}</span>
+            <div class="item-amount-row">
+              <span class="item-amount-label">Amount</span>
+              <div class="item-stepper">
+                <button type="button" class="item-step-btn" data-item-action="decrease" data-id="${item.id}" aria-label="Decrease ${escapeHtml(item.name || "item")}">−</button>
+                <span class="item-amount-value">${escapeHtml(item.amount ?? 0)}</span>
+                <button type="button" class="item-step-btn" data-item-action="increase" data-id="${item.id}" aria-label="Increase ${escapeHtml(item.name || "item")}">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="item-side-actions">
+          <button type="button" class="icon-action-btn item-side-btn" data-item-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "item")}">✎</button>
+          <button type="button" class="icon-action-btn equipment-remove-btn item-side-btn" data-item-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "item")}">⌫</button>
         </div>
       </div>
     `)
@@ -1224,7 +1457,8 @@ function saveSheetStateToStorage() {
       hearts,
       globals,
       equipment: sheetState.equipment || [],
-      statuses: sheetState.statuses || []
+      statuses: sheetState.statuses || [],
+      items: sheetState.items || []
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1250,6 +1484,7 @@ function loadSheetStateFromStorage() {
     sheetState.globals = data.globals || {};
     sheetState.equipment = Array.isArray(data.equipment) ? data.equipment : [];
     sheetState.statuses = Array.isArray(data.statuses) ? data.statuses : [];
+    sheetState.items = Array.isArray(data.items) ? data.items : [];
 
     // restore header fields
     const globalMap = [

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.5.2">
+  <link rel="stylesheet" href="style.css?v=4.6.0">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
@@ -221,6 +221,77 @@
       <div id="history-panel" class="history hidden">
         <div id="history-list" class="history-list">
           <p class="history-empty">No rolls yet.</p>
+        </div>
+      </div>
+
+      <div class="items-block">
+        <div class="equipment-header">
+          <div class="equipment-title-row">
+            <h3 class="sheet-section-title equipment-title">Items</h3>
+            <button
+              type="button"
+              id="open-item-modal"
+              class="equipment-add-btn equipment-add-btn-small"
+              aria-haspopup="dialog"
+              aria-controls="item-modal"
+              onclick="openItemModal()"
+            >
+              + Add
+            </button>
+          </div>
+        </div>
+
+        <div id="item-list" class="item-list">
+          <p class="equipment-empty">No items yet.</p>
+        </div>
+      </div>
+
+      <div
+        id="item-modal"
+        class="result-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="item-modal-title"
+      >
+        <div class="result-modal-backdrop" id="item-modal-backdrop"></div>
+        <div class="result-modal-panel equipment-modal-panel">
+          <div class="result-modal-header">
+            <h2 id="item-modal-title">Add Item</h2>
+            <button
+              type="button"
+              id="close-item-modal"
+              class="result-modal-close"
+              aria-label="Close item form"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="result-modal-body">
+            <form id="item-form" class="equipment-form">
+              <input type="hidden" id="item-id">
+
+              <label class="equipment-field" for="item-name">
+                <span>Name :</span>
+                <input type="text" id="item-name" required>
+              </label>
+
+              <label class="equipment-field" for="item-details">
+                <span>Details :</span>
+                <textarea id="item-details" rows="4"></textarea>
+              </label>
+
+              <label class="equipment-field" for="item-amount">
+                <span>Amount :</span>
+                <input type="number" id="item-amount" min="0" value="1">
+              </label>
+
+              <div class="equipment-form-actions">
+                <button type="submit" id="save-item-btn">Add</button>
+                <button type="button" id="cancel-item-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -1351,6 +1422,6 @@
     </div>
   </div>
 
-  <script src="dice.js?v=4.5.2"></script>
+  <script src="dice.js?v=4.6.0"></script>
 </body>
 </html>

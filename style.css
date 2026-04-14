@@ -208,6 +208,94 @@ button:hover {
   margin-top: 1rem;
 }
 
+.items-block {
+  margin-top: 1.25rem;
+}
+
+.item-list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #dfd3c1;
+  border-radius: 12px;
+  background: #fbf8f1;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.item-amount-label {
+  font-size: 0.82rem;
+  color: #6f675b;
+  font-weight: 600;
+}
+
+.item-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d6c7ae;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #f6f1e8;
+}
+
+.item-step-btn {
+  margin-top: 0;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: #e9dfcf;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.item-step-btn:hover {
+  background: #deceb7;
+}
+
+.item-amount-value {
+  min-width: 44px;
+  padding: 0 0.7rem;
+  text-align: center;
+  font-weight: 700;
+  color: #2c241a;
+}
+
+.item-side-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.item-side-btn {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
 /* ===== Manual / help ===== */
 
 .help-icon {
