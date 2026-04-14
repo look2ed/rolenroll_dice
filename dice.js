@@ -354,8 +354,8 @@ function renderEquipmentList() {
           </div>
         </div>
         <div class="equipment-item-actions">
-          <button type="button" data-action="edit" data-id="${item.id}">View / Edit</button>
-          <button type="button" class="equipment-remove-btn" data-action="remove" data-id="${item.id}">Remove</button>
+          <button type="button" class="icon-action-btn" data-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "equipment")}">✎</button>
+          <button type="button" class="icon-action-btn equipment-remove-btn" data-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "equipment")}">🗑</button>
         </div>
       </div>
     `)
@@ -566,8 +566,8 @@ function renderStatusList() {
           </div>
         </div>
         <div class="status-item-actions">
-          <button type="button" class="status-icon-btn" data-status-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "status")}">E</button>
-          <button type="button" class="status-icon-btn equipment-remove-btn" data-status-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "status")}">🗑</button>
+          <button type="button" class="icon-action-btn" data-status-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "status")}">✎</button>
+          <button type="button" class="icon-action-btn equipment-remove-btn" data-status-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "status")}">🗑</button>
         </div>
       </div>
     `)

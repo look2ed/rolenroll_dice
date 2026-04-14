@@ -424,7 +424,7 @@ button:hover {
 .equipment-title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.75rem;
   flex-wrap: nowrap;
 }
@@ -437,11 +437,20 @@ button:hover {
   min-width: 0;
 }
 
+.status-block-top .equipment-title {
+  border-top: none;
+  padding-top: 0;
+}
+
+.status-block-top .equipment-title-row {
+  align-items: baseline;
+}
+
 .equipment-add-btn {
   margin-top: 0;
-  padding: 0.45rem 0.9rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.1;
   font-weight: 600;
   background: #c9b08a;
@@ -471,6 +480,7 @@ button:hover {
 
 .status-block-top {
   margin-bottom: 0;
+  padding-top: 3.1rem;
 }
 
 .status-list {
@@ -556,17 +566,19 @@ button:hover {
   margin-top: 0;
 }
 
-.status-item-actions button {
+.status-item-actions button,
+.equipment-item-actions button {
   margin-top: 0;
 }
 
-.status-icon-btn {
+.icon-action-btn {
   min-width: 36px;
   height: 36px;
   padding: 0 0.6rem;
   border-radius: 10px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
+  line-height: 1;
 }
 
 .equipment-remove-btn {
@@ -661,6 +673,7 @@ button:hover {
     flex: 1 1 auto;
     min-width: 0;
     width: 100%;
+    padding-top: 0;
   }
 
   .equipment-item {
@@ -695,7 +708,7 @@ button:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 0.15rem;
-  max-width: 230px;
+  max-width: 255px;
 }
 
 .mental-heart {
