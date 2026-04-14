@@ -362,6 +362,13 @@ button:hover {
   gap: 0.35rem;
 }
 
+.sheet-top-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
 .sheet-row {
   display: flex;
   align-items: center;
@@ -406,14 +413,17 @@ button:hover {
 .equipment-title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .equipment-title {
   margin: 0;
   border-top: 1px solid #d0c7b9;
   padding-top: 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .equipment-add-btn {
@@ -425,6 +435,12 @@ button:hover {
   font-weight: 600;
   background: #c9b08a;
   border-color: #a88c5c;
+}
+
+.equipment-add-btn-small {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-width: auto;
 }
 
 .equipment-add-btn:hover {
@@ -440,6 +456,10 @@ button:hover {
 
 .status-block {
   margin-bottom: 0.75rem;
+}
+
+.status-block-top {
+  margin-bottom: 0;
 }
 
 .status-list {
@@ -622,6 +642,10 @@ button:hover {
 }
 
 @media (max-width: 700px) {
+  .sheet-top-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .equipment-item {
     flex-direction: column;
     align-items: flex-start;
@@ -642,6 +666,10 @@ button:hover {
 
   .equipment-form {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .equipment-title-row {
+    flex-wrap: wrap;
   }
 }
 

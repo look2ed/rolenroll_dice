@@ -231,47 +231,71 @@
 
       <!-- upper section: name, health, defense, will, mental hearts -->
       <div class="sheet-header">
-        <div class="sheet-top-fields">
-          <div class="sheet-row">
-            <label for="char-name">Name</label>
-            <input type="text" id="char-name" class="char-name-input" placeholder="Character Name">
+        <div class="sheet-top-layout">
+          <div class="sheet-top-fields">
+            <div class="sheet-row">
+              <label for="char-name">Name</label>
+              <input type="text" id="char-name" class="char-name-input" placeholder="Character Name">
+            </div>
+            <div class="sheet-row">
+              <label>Health</label>
+              <input type="number" id="char-health" min="0" value="10">
+              <span>/</span>
+              <input type="number" id="char-health-max" min="0" value="10">
+            </div>
+            <div class="sheet-row">
+              <label>Defense</label>
+              <input type="number" id="char-defense" min="0" value="0">
+            </div>
+            <div class="sheet-row">
+              <label>Will Power</label>
+              <input type="number" id="char-willpower" min="0" value="0">
+            </div>
+            <div class="sheet-row">
+              <label>Mental</label>
+              <div class="mental-hearts">
+                <!-- 18 hearts -->
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+                <button type="button" class="mental-heart"></button>
+              </div>
+            </div>
           </div>
-          <div class="sheet-row">
-            <label>Health</label>
-            <input type="number" id="char-health" min="0" value="10">
-            <span>/</span>
-            <input type="number" id="char-health-max" min="0" value="10">
-          </div>
-          <div class="sheet-row">
-            <label>Defense</label>
-            <input type="number" id="char-defense" min="0" value="0">
-          </div>
-          <div class="sheet-row">
-            <label>Will Power</label>
-            <input type="number" id="char-willpower" min="0" value="0">
-          </div>
-          <div class="sheet-row">
-            <label>Mental</label>
-            <div class="mental-hearts">
-              <!-- 18 hearts -->
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
-              <button type="button" class="mental-heart"></button>
+
+          <div class="status-block status-block-top">
+            <div class="equipment-header">
+              <div class="equipment-title-row">
+                <h3 class="sheet-section-title equipment-title">Buff &amp; Debuff</h3>
+                <button
+                  type="button"
+                  id="open-status-modal"
+                  class="equipment-add-btn equipment-add-btn-small"
+                  aria-haspopup="dialog"
+                  aria-controls="status-modal"
+                  onclick="openStatusModal()"
+                >
+                  + Add
+                </button>
+              </div>
+            </div>
+
+            <div id="status-list" class="status-list">
+              <p class="equipment-empty">No buffs or debuffs yet.</p>
             </div>
           </div>
         </div>
@@ -284,12 +308,12 @@
             <button
               type="button"
               id="open-equipment-modal"
-              class="equipment-add-btn"
+              class="equipment-add-btn equipment-add-btn-small"
               aria-haspopup="dialog"
               aria-controls="equipment-modal"
               onclick="openEquipmentModal()"
             >
-              + Add Equipment
+              + Add
             </button>
           </div>
         </div>
@@ -360,28 +384,6 @@
               </div>
             </form>
           </div>
-        </div>
-      </div>
-
-      <div class="status-block">
-        <div class="equipment-header">
-          <div class="equipment-title-row">
-            <h3 class="sheet-section-title equipment-title">Buff &amp; Debuff</h3>
-            <button
-              type="button"
-              id="open-status-modal"
-              class="equipment-add-btn"
-              aria-haspopup="dialog"
-              aria-controls="status-modal"
-              onclick="openStatusModal()"
-            >
-              + Add Buff / Debuff
-            </button>
-          </div>
-        </div>
-
-        <div id="status-list" class="status-list">
-          <p class="equipment-empty">No buffs or debuffs yet.</p>
         </div>
       </div>
 
