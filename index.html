@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.6.1">
+  <link rel="stylesheet" href="style.css?v=4.6.2">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
@@ -228,26 +228,26 @@
 
       <div class="items-panel">
         <div class="items-block">
-        <div class="equipment-header">
-          <div class="equipment-title-row">
-            <h3 class="sheet-section-title equipment-title">Items</h3>
-            <button
-              type="button"
-              id="open-item-modal"
-              class="equipment-add-btn equipment-add-btn-small"
-              aria-haspopup="dialog"
-              aria-controls="item-modal"
-              onclick="openItemModal()"
-            >
-              + Add
-            </button>
+          <div class="equipment-header">
+            <div class="equipment-title-row">
+              <h3 class="sheet-section-title equipment-title">Items</h3>
+              <button
+                type="button"
+                id="open-item-modal"
+                class="equipment-add-btn equipment-add-btn-small"
+                aria-haspopup="dialog"
+                aria-controls="item-modal"
+                onclick="openItemModal()"
+              >
+                + Add
+              </button>
+            </div>
+          </div>
+
+          <div id="item-list" class="item-list">
+            <p class="equipment-empty">No items yet.</p>
           </div>
         </div>
-
-        <div id="item-list" class="item-list">
-          <p class="equipment-empty">No items yet.</p>
-        </div>
-      </div>
       </div>
 
       <div
@@ -295,7 +295,6 @@
                 <button type="button" id="cancel-item-btn">Cancel</button>
               </div>
             </form>
-          </div>
           </div>
         </div>
       </div>
@@ -1427,6 +1426,6 @@
     </div>
   </div>
 
-  <script src="dice.js?v=4.6.1"></script>
+  <script src="dice.js?v=4.6.2"></script>
 </body>
 </html>
