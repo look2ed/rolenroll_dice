@@ -76,7 +76,7 @@ h1 {
   bottom: 0;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 0.5rem;
   justify-content: flex-start;
   overflow-x: auto;
   padding-right: 5rem;
@@ -122,19 +122,21 @@ h1 {
 
 .sheet-tab-add {
   margin-top: 0;
-  min-width: 56px;
-  padding: 0.56rem 1rem;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0;
   border: 1px solid #a88c5c;
-  border-left-width: 0;
-  border-radius: 0 6px 6px 0;
+  border-radius: 999px;
   background: #c9b08a;
   color: #332d25;
   font-size: 1.2rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
 }
 
 .sheet-tab-add:hover {
