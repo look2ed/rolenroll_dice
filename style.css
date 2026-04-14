@@ -232,7 +232,26 @@ button:hover {
   margin-top: 0;
 }
 
+.items-panel .equipment-title {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.extra-skill-panel .equipment-title {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
 .item-list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.extra-skill-list {
   margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -250,9 +269,51 @@ button:hover {
   background: #fbf8f1;
 }
 
+.extra-skill-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #dfd3c1;
+  border-radius: 12px;
+  background: #fbf8f1;
+}
+
 .item-main {
   flex: 1;
   min-width: 0;
+}
+
+.extra-skill-level-field {
+  grid-column: 1 / -1;
+}
+
+.extra-skill-level-dots,
+.extra-skill-dots {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.extra-skill-dot,
+.extra-skill-card-dot {
+  margin-top: 0;
+}
+
+.profession-field {
+  grid-column: 1 / -1;
+}
+
+.profession-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: auto;
+}
+
+.profession-toggle input {
+  margin: 0;
 }
 
 .item-amount-row {
@@ -307,6 +368,13 @@ button:hover {
   font-size: 0.8rem;
   border-radius: 0;
   line-height: 1;
+}
+
+.extra-skill-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 /* ===== Manual / help ===== */

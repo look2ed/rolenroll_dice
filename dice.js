@@ -9,6 +9,8 @@ let closeResultModalBtn;
 let resultModalBackdrop;
 let statOptions = [];
 let equipmentDependencySelection = [];
+let extraSkillDependencySelection = [];
+let extraSkillLevelSelection = 0;
 
 // key for localStorage
 const STORAGE_KEY = "rolenroll_sheet_state_v1";
@@ -20,7 +22,8 @@ const sheetState = {
   globals: {}, // e.g. { name, health, healthMax, defense, will }
   equipment: [],
   statuses: [],
-  items: []
+  items: [],
+  extraSkills: []
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -107,6 +110,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 12) Items block and modal
   setupItems();
+
+  // 13) Extra skill block and modal
+  setupExtraSkills();
 });
 
 function setupResultModal() {
@@ -508,11 +514,11 @@ function saveEquipmentDependenciesFromModal() {
   closeEquipmentDependencyModal();
 }
 
-function getEquipmentRollDice(item) {
-  if (!Array.isArray(item.dependencies) || !item.dependencies.length) return 0;
+function getDependencyRollDice(dependencyIds = []) {
+  if (!Array.isArray(dependencyIds) || !dependencyIds.length) return 0;
 
   let total = 0;
-  item.dependencies.forEach((id) => {
+  dependencyIds.forEach((id) => {
     const option = statOptions.find((entry) => entry.id === id);
     if (!option) return;
 
@@ -539,12 +545,16 @@ function getEquipmentRollDice(item) {
   return total;
 }
 
-function getEquipmentRollSuccessBonus(item) {
-  if (!Array.isArray(item.dependencies) || !item.dependencies.length) return 0;
+function getEquipmentRollDice(item) {
+  return getDependencyRollDice(item.dependencies);
+}
+
+function getDependencySuccessBonus(dependencyIds = []) {
+  if (!Array.isArray(dependencyIds) || !dependencyIds.length) return 0;
 
   const bonusKeys = new Set();
 
-  item.dependencies.forEach((id) => {
+  dependencyIds.forEach((id) => {
     const option = statOptions.find((entry) => entry.id === id);
     if (!option) return;
 
@@ -583,6 +593,10 @@ function getEquipmentRollSuccessBonus(item) {
   });
 
   return bonusKeys.size;
+}
+
+function getEquipmentRollSuccessBonus(item) {
+  return getDependencySuccessBonus(item.dependencies);
 }
 
 function rollEquipment(item) {
@@ -1163,6 +1177,393 @@ function renderItemList() {
         <div class="item-side-actions">
           <button type="button" class="icon-action-btn item-side-btn" data-item-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "item")}">✎</button>
           <button type="button" class="icon-action-btn equipment-remove-btn item-side-btn" data-item-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "item")}">⌫</button>
+        </div>
+      </div>
+    `)
+    .join("");
+}
+
+function setupExtraSkills() {
+  const openBtn = document.getElementById("open-extra-skill-modal");
+  const closeBtn = document.getElementById("close-extra-skill-modal");
+  const cancelBtn = document.getElementById("cancel-extra-skill-btn");
+  const backdrop = document.getElementById("extra-skill-modal-backdrop");
+  const form = document.getElementById("extra-skill-form");
+  const list = document.getElementById("extra-skill-list");
+  const openDependencyBtn = document.getElementById("open-extra-skill-dependency-modal");
+  const closeDependencyBtn = document.getElementById("close-extra-skill-dependency-modal");
+  const cancelDependencyBtn = document.getElementById("cancel-extra-skill-dependency-btn");
+  const saveDependencyBtn = document.getElementById("save-extra-skill-dependency-btn");
+  const dependencyBackdrop = document.getElementById("extra-skill-dependency-modal-backdrop");
+
+  if (!list || !form) return;
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => openExtraSkillModal());
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeExtraSkillModal);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", closeExtraSkillModal);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener("click", closeExtraSkillModal);
+  }
+
+  if (openDependencyBtn) {
+    openDependencyBtn.addEventListener("click", openExtraSkillDependencyModal);
+  }
+
+  if (closeDependencyBtn) {
+    closeDependencyBtn.addEventListener("click", closeExtraSkillDependencyModal);
+  }
+
+  if (cancelDependencyBtn) {
+    cancelDependencyBtn.addEventListener("click", closeExtraSkillDependencyModal);
+  }
+
+  if (saveDependencyBtn) {
+    saveDependencyBtn.addEventListener("click", saveExtraSkillDependenciesFromModal);
+  }
+
+  if (dependencyBackdrop) {
+    dependencyBackdrop.addEventListener("click", closeExtraSkillDependencyModal);
+  }
+
+  form.addEventListener("submit", onExtraSkillSubmit);
+  setupExtraSkillLevelDots();
+
+  list.addEventListener("click", (event) => {
+    const actionBtn = event.target.closest("button[data-extra-skill-action]");
+    if (!actionBtn) return;
+
+    const id = actionBtn.dataset.id;
+    if (!id) return;
+
+    const item = sheetState.extraSkills.find((entry) => entry.id === id);
+    if (!item) return;
+
+    if (actionBtn.dataset.extraSkillAction === "edit") {
+      openExtraSkillModal(item);
+      return;
+    }
+
+    if (actionBtn.dataset.extraSkillAction === "remove") {
+      removeExtraSkill(id);
+      return;
+    }
+
+    if (actionBtn.dataset.extraSkillAction === "roll") {
+      rollExtraSkill(item);
+    }
+  });
+
+  list.addEventListener("click", (event) => {
+    const dot = event.target.closest(".extra-skill-card-dot");
+    if (!dot) return;
+
+    const id = dot.dataset.extraSkillId;
+    const level = parseInt(dot.dataset.index || "0", 10);
+    if (!id || Number.isNaN(level)) return;
+
+    updateExtraSkillLevel(id, level);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const modal = document.getElementById("extra-skill-modal");
+    if (event.key === "Escape" && modal && !modal.classList.contains("hidden")) {
+      closeExtraSkillModal();
+    }
+
+    const dependencyModal = document.getElementById("extra-skill-dependency-modal");
+    if (event.key === "Escape" && dependencyModal && !dependencyModal.classList.contains("hidden")) {
+      closeExtraSkillDependencyModal();
+    }
+  });
+
+  renderExtraSkillList();
+}
+
+function setupExtraSkillLevelDots() {
+  const dots = document.querySelectorAll("#extra-skill-level-dots .extra-skill-dot");
+  dots.forEach((dot, i) => {
+    const idx = parseInt(dot.dataset.index || String(i + 1), 10);
+    dot.addEventListener("click", () => {
+      extraSkillLevelSelection = extraSkillLevelSelection === idx ? idx - 1 : idx;
+      if (extraSkillLevelSelection < 0) extraSkillLevelSelection = 0;
+      if (extraSkillLevelSelection > 6) extraSkillLevelSelection = 6;
+      renderExtraSkillLevelDots();
+    });
+  });
+  renderExtraSkillLevelDots();
+}
+
+function renderExtraSkillLevelDots() {
+  const dots = document.querySelectorAll("#extra-skill-level-dots .extra-skill-dot");
+  dots.forEach((dot) => {
+    const idx = parseInt(dot.dataset.index || "0", 10);
+    if (idx <= extraSkillLevelSelection) dot.classList.add("active");
+    else dot.classList.remove("active");
+  });
+}
+
+function openExtraSkillModal(item = null) {
+  const modal = document.getElementById("extra-skill-modal");
+  const title = document.getElementById("extra-skill-modal-title");
+  const saveBtn = document.getElementById("save-extra-skill-btn");
+  if (!modal) return;
+
+  populateExtraSkillForm(item);
+  if (title) title.textContent = item ? "Edit Extra Skill" : "Add Extra Skill";
+  if (saveBtn) saveBtn.textContent = item ? "Save" : "Add";
+
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeExtraSkillModal() {
+  const modal = document.getElementById("extra-skill-modal");
+  const dependencyModal = document.getElementById("extra-skill-dependency-modal");
+  const form = document.getElementById("extra-skill-form");
+  const title = document.getElementById("extra-skill-modal-title");
+  const saveBtn = document.getElementById("save-extra-skill-btn");
+  const idInput = document.getElementById("extra-skill-id");
+
+  if (modal) modal.classList.add("hidden");
+  if (dependencyModal) dependencyModal.classList.add("hidden");
+  if (form) form.reset();
+  if (idInput) idInput.value = "";
+  if (title) title.textContent = "Add Extra Skill";
+  if (saveBtn) saveBtn.textContent = "Add";
+
+  extraSkillDependencySelection = [];
+  extraSkillLevelSelection = 0;
+  renderExtraSkillLevelDots();
+  renderExtraSkillDependencyList();
+  document.body.style.overflow = "";
+}
+
+function populateExtraSkillForm(item) {
+  const idInput = document.getElementById("extra-skill-id");
+  const nameInput = document.getElementById("extra-skill-name");
+  const detailsInput = document.getElementById("extra-skill-details");
+  const professionInput = document.getElementById("extra-skill-profession");
+
+  if (!nameInput) return;
+
+  if (!item) {
+    if (idInput) idInput.value = "";
+    nameInput.value = "";
+    if (detailsInput) detailsInput.value = "";
+    if (professionInput) professionInput.checked = false;
+    extraSkillLevelSelection = 0;
+    extraSkillDependencySelection = [];
+    renderExtraSkillLevelDots();
+    renderExtraSkillDependencyList();
+    return;
+  }
+
+  if (idInput) idInput.value = item.id;
+  nameInput.value = item.name || "";
+  if (detailsInput) detailsInput.value = item.details || "";
+  if (professionInput) professionInput.checked = !!item.profession;
+  extraSkillLevelSelection = item.level || 0;
+  extraSkillDependencySelection = Array.isArray(item.dependencies) ? [...item.dependencies] : [];
+  renderExtraSkillLevelDots();
+  renderExtraSkillDependencyList();
+}
+
+function renderExtraSkillDependencyList() {
+  const container = document.getElementById("extra-skill-dependency-list");
+  if (!container) return;
+
+  if (!extraSkillDependencySelection.length) {
+    container.innerHTML = '<p class="equipment-empty equipment-empty-inline">No stat dependencies selected.</p>';
+    return;
+  }
+
+  container.innerHTML = extraSkillDependencySelection
+    .map((id) => statOptions.find((option) => option.id === id))
+    .filter(Boolean)
+    .map((option) => `<span class="dependency-chip">${escapeHtml(option.label)}</span>`)
+    .join("");
+}
+
+function openExtraSkillDependencyModal() {
+  const modal = document.getElementById("extra-skill-dependency-modal");
+  const container = document.getElementById("extra-skill-dependency-options");
+  if (!modal || !container) return;
+
+  const attrs = statOptions.filter((option) => option.role === "attr");
+  const skills = statOptions.filter((option) => option.role === "skill");
+
+  container.innerHTML = `
+    <div class="dependency-group">
+      <h3>Attributes</h3>
+      <div class="dependency-grid">
+        ${attrs.map((option) => `
+          <label class="dependency-option">
+            <input type="checkbox" value="${option.id}" ${extraSkillDependencySelection.includes(option.id) ? "checked" : ""}>
+            <span>${escapeHtml(option.label)}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+    <div class="dependency-group">
+      <h3>General Ability</h3>
+      <div class="dependency-grid">
+        ${skills.map((option) => `
+          <label class="dependency-option">
+            <input type="checkbox" value="${option.id}" ${extraSkillDependencySelection.includes(option.id) ? "checked" : ""}>
+            <span>${escapeHtml(option.label)}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeExtraSkillDependencyModal() {
+  const modal = document.getElementById("extra-skill-dependency-modal");
+  const extraSkillModal = document.getElementById("extra-skill-modal");
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+  document.body.style.overflow =
+    extraSkillModal && !extraSkillModal.classList.contains("hidden") ? "hidden" : "";
+}
+
+function saveExtraSkillDependenciesFromModal() {
+  const container = document.getElementById("extra-skill-dependency-options");
+  if (!container) return;
+
+  extraSkillDependencySelection = Array.from(
+    container.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((input) => input.value);
+
+  renderExtraSkillDependencyList();
+  closeExtraSkillDependencyModal();
+}
+
+function onExtraSkillSubmit(event) {
+  event.preventDefault();
+
+  const idInput = document.getElementById("extra-skill-id");
+  const nameInput = document.getElementById("extra-skill-name");
+  const detailsInput = document.getElementById("extra-skill-details");
+  const professionInput = document.getElementById("extra-skill-profession");
+
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert("Please enter an extra skill name.");
+    return;
+  }
+
+  const existingId = idInput?.value || "";
+  const payload = {
+    id: existingId || `extra-skill-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    name,
+    level: extraSkillLevelSelection,
+    details: detailsInput?.value.trim() || "",
+    dependencies: [...extraSkillDependencySelection],
+    profession: !!professionInput?.checked
+  };
+
+  const existingIndex = sheetState.extraSkills.findIndex((item) => item.id === payload.id);
+  if (existingIndex >= 0) {
+    sheetState.extraSkills[existingIndex] = payload;
+  } else {
+    sheetState.extraSkills.unshift(payload);
+  }
+
+  saveSheetStateToStorage();
+  renderExtraSkillList();
+  closeExtraSkillModal();
+}
+
+function updateExtraSkillLevel(id, clickedLevel) {
+  const item = sheetState.extraSkills.find((entry) => entry.id === id);
+  if (!item) return;
+
+  item.level = item.level === clickedLevel ? clickedLevel - 1 : clickedLevel;
+  if (item.level < 0) item.level = 0;
+  if (item.level > 6) item.level = 6;
+  saveSheetStateToStorage();
+  renderExtraSkillList();
+}
+
+function removeExtraSkill(id) {
+  sheetState.extraSkills = sheetState.extraSkills.filter((item) => item.id !== id);
+  saveSheetStateToStorage();
+  renderExtraSkillList();
+}
+
+function rollExtraSkill(item) {
+  const ownLevel = item.level || 0;
+  const dependencyDice = getDependencyRollDice(item.dependencies);
+  const totalDice = ownLevel + dependencyDice;
+  if (totalDice <= 0) {
+    alert("This extra skill has no dice yet. Increase its level or add stat dependencies with points.");
+    return;
+  }
+
+  const specialInput = document.getElementById("special");
+  const successInput = document.getElementById("success");
+  const penaltyInput = document.getElementById("penalty");
+  let globalSuccess = parseInt(successInput?.value || "0", 10);
+  if (Number.isNaN(globalSuccess) || globalSuccess < 0) globalSuccess = 0;
+
+  performRoll({
+    total: totalDice,
+    specialStr: specialInput?.value || "",
+    success: globalSuccess + getDependencySuccessBonus(item.dependencies) + (item.profession ? 1 : 0),
+    penalty: penaltyInput?.value || "0"
+  });
+}
+
+function renderExtraSkillList() {
+  const list = document.getElementById("extra-skill-list");
+  if (!list) return;
+
+  if (!Array.isArray(sheetState.extraSkills) || sheetState.extraSkills.length === 0) {
+    list.innerHTML = '<p class="equipment-empty">No extra skills yet.</p>';
+    return;
+  }
+
+  list.innerHTML = sheetState.extraSkills
+    .map((item) => `
+      <div class="extra-skill-card">
+        <div class="equipment-item-info">
+          <span class="equipment-name">${escapeHtml(item.name || "")}</span>
+          <div class="extra-skill-dots">
+            ${Array.from({ length: 6 }, (_, index) => {
+              const dotIndex = index + 1;
+              return `<button type="button" class="stat-dot extra-skill-card-dot ${dotIndex <= (item.level || 0) ? "active" : ""}" data-extra-skill-id="${item.id}" data-index="${dotIndex}"></button>`;
+            }).join("")}
+          </div>
+          <div class="equipment-preview equipment-dependency-preview">
+            ${Array.isArray(item.dependencies) && item.dependencies.length
+              ? item.dependencies
+                  .map((id) => statOptions.find((option) => option.id === id))
+                  .filter(Boolean)
+                  .map((option) => `<span class="dependency-chip">${escapeHtml(option.label)}</span>`)
+                  .join("")
+              : '<span class="equipment-dependency-empty">No stat dependencies</span>'}
+          </div>
+        </div>
+        <div class="extra-skill-actions">
+          <button type="button" class="equipment-roll-btn" data-extra-skill-action="roll" data-id="${item.id}">Roll</button>
+          <button type="button" class="icon-action-btn" data-extra-skill-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "extra skill")}">✎</button>
+          <button type="button" class="icon-action-btn equipment-remove-btn" data-extra-skill-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "extra skill")}">⌫</button>
         </div>
       </div>
     `)
@@ -1840,7 +2241,8 @@ function saveSheetStateToStorage() {
       globals,
       equipment: sheetState.equipment || [],
       statuses: sheetState.statuses || [],
-      items: sheetState.items || []
+      items: sheetState.items || [],
+      extraSkills: sheetState.extraSkills || []
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1867,6 +2269,7 @@ function loadSheetStateFromStorage() {
     sheetState.equipment = Array.isArray(data.equipment) ? data.equipment : [];
     sheetState.statuses = Array.isArray(data.statuses) ? data.statuses : [];
     sheetState.items = Array.isArray(data.items) ? data.items : [];
+    sheetState.extraSkills = Array.isArray(data.extraSkills) ? data.extraSkills : [];
 
     // restore header fields
     const globalMap = [

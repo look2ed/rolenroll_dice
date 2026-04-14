@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.8.9">
+  <link rel="stylesheet" href="style.css?v=4.10.0">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
@@ -250,6 +250,135 @@
 
           <div id="item-list" class="item-list">
             <p class="equipment-empty">No items yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="extra-skill-panel">
+        <div class="items-block">
+          <div class="equipment-header">
+            <div class="equipment-title-row">
+              <h3 class="sheet-section-title equipment-title">Extra Skill</h3>
+              <button
+                type="button"
+                id="open-extra-skill-modal"
+                class="equipment-add-btn equipment-add-btn-small"
+                aria-haspopup="dialog"
+                aria-controls="extra-skill-modal"
+                onclick="openExtraSkillModal()"
+              >
+                + Add
+              </button>
+            </div>
+          </div>
+
+          <div id="extra-skill-list" class="extra-skill-list">
+            <p class="equipment-empty">No extra skills yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="extra-skill-modal"
+        class="result-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="extra-skill-modal-title"
+      >
+        <div class="result-modal-backdrop" id="extra-skill-modal-backdrop"></div>
+        <div class="result-modal-panel equipment-modal-panel">
+          <div class="result-modal-header">
+            <h2 id="extra-skill-modal-title">Add Extra Skill</h2>
+            <button
+              type="button"
+              id="close-extra-skill-modal"
+              class="result-modal-close"
+              aria-label="Close extra skill form"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="result-modal-body">
+            <form id="extra-skill-form" class="equipment-form">
+              <input type="hidden" id="extra-skill-id">
+
+              <label class="equipment-field" for="extra-skill-name">
+                <span>Name :</span>
+                <input type="text" id="extra-skill-name" required>
+              </label>
+
+              <div class="equipment-field extra-skill-level-field">
+                <span>LV. :</span>
+                <div id="extra-skill-level-dots" class="extra-skill-level-dots">
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="1"></button>
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="2"></button>
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="3"></button>
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="4"></button>
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="5"></button>
+                  <button type="button" class="stat-dot extra-skill-dot" data-index="6"></button>
+                </div>
+              </div>
+
+              <label class="equipment-field" for="extra-skill-details">
+                <span>Details :</span>
+                <textarea id="extra-skill-details" rows="4"></textarea>
+              </label>
+
+              <div class="equipment-field equipment-dependency-field">
+                <div class="equipment-dependency-header">
+                  <span>Stat Dependencies :</span>
+                  <button type="button" id="open-extra-skill-dependency-modal" class="mini-add-btn">+ Add</button>
+                </div>
+                <div id="extra-skill-dependency-list" class="equipment-dependency-list">
+                  <p class="equipment-empty equipment-empty-inline">No stat dependencies selected.</p>
+                </div>
+              </div>
+
+              <div class="equipment-field profession-field">
+                <span>Profession :</span>
+                <label class="profession-toggle">
+                  <input type="checkbox" id="extra-skill-profession">
+                  <span>+1 Success</span>
+                </label>
+              </div>
+
+              <div class="equipment-form-actions">
+                <button type="submit" id="save-extra-skill-btn">Add</button>
+                <button type="button" id="cancel-extra-skill-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="extra-skill-dependency-modal"
+        class="result-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="extra-skill-dependency-modal-title"
+      >
+        <div class="result-modal-backdrop" id="extra-skill-dependency-modal-backdrop"></div>
+        <div class="result-modal-panel equipment-modal-panel">
+          <div class="result-modal-header">
+            <h2 id="extra-skill-dependency-modal-title">Select Stat Dependencies</h2>
+            <button
+              type="button"
+              id="close-extra-skill-dependency-modal"
+              class="result-modal-close"
+              aria-label="Close extra skill dependency form"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="result-modal-body">
+            <div id="extra-skill-dependency-options" class="dependency-options"></div>
+            <div class="equipment-form-actions">
+              <button type="button" id="save-extra-skill-dependency-btn">Save</button>
+              <button type="button" id="cancel-extra-skill-dependency-btn">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1478,6 +1607,6 @@
     </p>
   </footer>
 
-  <script src="dice.js?v=4.8.9"></script>
+  <script src="dice.js?v=4.10.0"></script>
 </body>
 </html>
