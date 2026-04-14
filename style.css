@@ -593,6 +593,9 @@ button:hover {
   line-height: 1;
   background: #f5f2eb;
   border-color: #b8b0a2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .equipment-remove-btn {
