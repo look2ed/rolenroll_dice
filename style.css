@@ -1427,7 +1427,7 @@ button:hover {
 /* Default stat row layout (for Attributes) */
 .stat-row {
   display: grid;
-  grid-template-columns: 90px 1fr auto auto;
+  grid-template-columns: 180px 1fr auto auto;
   gap: 0.5rem;
   align-items: center;
   font-size: 0.9rem;
