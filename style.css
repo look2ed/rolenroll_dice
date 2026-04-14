@@ -501,8 +501,8 @@ button:hover {
 }
 
 .equipment-form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
@@ -512,14 +512,26 @@ button:hover {
   gap: 0.35rem;
   font-size: 0.95rem;
   font-weight: 600;
+  width: auto;
 }
 
 .equipment-field span {
   font-weight: 600;
 }
 
+.equipment-field[for="equipment-name"],
+.equipment-field[for="equipment-description"] {
+  grid-column: 1 / -1;
+}
+
+.equipment-field label,
+.equipment-field > span {
+  width: auto;
+}
+
 .equipment-field input,
 .equipment-field textarea {
+  display: block;
   width: 100%;
   min-width: 0;
   padding: 0.45rem 0.55rem;
@@ -532,12 +544,30 @@ button:hover {
 
 .equipment-field textarea {
   resize: vertical;
+  min-height: 110px;
 }
 
 .equipment-form-actions {
+  grid-column: 1 / -1;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+#equipment-modal .result-modal-body {
+  padding-top: 0.5rem;
+}
+
+#equipment-modal label {
+  display: flex;
+  width: auto;
+}
+
+#equipment-modal input[type="text"],
+#equipment-modal input[type="number"],
+#equipment-modal textarea {
+  min-width: 0;
 }
 
 @media (max-width: 700px) {
@@ -548,6 +578,10 @@ button:hover {
 
   .equipment-item-actions {
     width: 100%;
+  }
+
+  .equipment-form {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
