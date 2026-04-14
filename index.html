@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.10.0">
+  <link rel="stylesheet" href="style.css?v=4.10.4">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
@@ -308,9 +308,14 @@
                 <input type="text" id="extra-skill-name" required>
               </label>
 
-              <div class="equipment-field extra-skill-level-field">
+              <label class="equipment-field extra-skill-level-field" for="extra-skill-level-input">
                 <span>LV. :</span>
-                <div id="extra-skill-level-dots" class="extra-skill-level-dots">
+                <input type="number" id="extra-skill-level-input" min="0" value="0">
+              </label>
+
+              <div class="equipment-field extra-skill-points-field">
+                <span>Point :</span>
+                <div id="extra-skill-points-dots" class="extra-skill-dots">
                   <button type="button" class="stat-dot extra-skill-dot" data-index="1"></button>
                   <button type="button" class="stat-dot extra-skill-dot" data-index="2"></button>
                   <button type="button" class="stat-dot extra-skill-dot" data-index="3"></button>
@@ -336,8 +341,8 @@
               </div>
 
               <div class="equipment-field profession-field">
-                <span>Profession :</span>
-                <label class="profession-toggle">
+                <label class="profession-toggle" for="extra-skill-profession">
+                  <span>Profession :</span>
                   <input type="checkbox" id="extra-skill-profession">
                   <span>+1 Success</span>
                 </label>
@@ -444,6 +449,12 @@
             <div class="sheet-row">
               <label for="char-name">Name</label>
               <input type="text" id="char-name" class="char-name-input" placeholder="Character Name">
+            </div>
+            <div class="sheet-row">
+              <label for="char-level">Lv.</label>
+              <input type="number" id="char-level" min="0" value="0">
+              <label for="char-exp" class="sheet-inline-label">EXP.</label>
+              <input type="text" id="char-exp" placeholder="0/0">
             </div>
             <div class="sheet-row">
               <label>Health</label>
@@ -1602,11 +1613,11 @@
 
   <footer class="site-footer">
     <p>
-      Role &amp; Roll system copyright belongs to BGN Squad.
-      This dice roller is an unofficial fan-made support tool for players, created by Panisara Thepthong.
+      &copy; Role &amp; Roll system copyright belongs to BGN Squad.
+      This dice roller is an unofficial fan-made support tool for players, created by Look2ed.
     </p>
   </footer>
 
-  <script src="dice.js?v=4.10.0"></script>
+  <script src="dice.js?v=4.10.4"></script>
 </body>
 </html>

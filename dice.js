@@ -10,7 +10,7 @@ let resultModalBackdrop;
 let statOptions = [];
 let equipmentDependencySelection = [];
 let extraSkillDependencySelection = [];
-let extraSkillLevelSelection = 0;
+let extraSkillPointsSelection = 0;
 
 // key for localStorage
 const STORAGE_KEY = "rolenroll_sheet_state_v1";
@@ -1235,8 +1235,7 @@ function setupExtraSkills() {
   }
 
   form.addEventListener("submit", onExtraSkillSubmit);
-  setupExtraSkillLevelDots();
-
+  setupExtraSkillPointDots();
   list.addEventListener("click", (event) => {
     const actionBtn = event.target.closest("button[data-extra-skill-action]");
     if (!actionBtn) return;
@@ -1288,29 +1287,6 @@ function setupExtraSkills() {
   renderExtraSkillList();
 }
 
-function setupExtraSkillLevelDots() {
-  const dots = document.querySelectorAll("#extra-skill-level-dots .extra-skill-dot");
-  dots.forEach((dot, i) => {
-    const idx = parseInt(dot.dataset.index || String(i + 1), 10);
-    dot.addEventListener("click", () => {
-      extraSkillLevelSelection = extraSkillLevelSelection === idx ? idx - 1 : idx;
-      if (extraSkillLevelSelection < 0) extraSkillLevelSelection = 0;
-      if (extraSkillLevelSelection > 6) extraSkillLevelSelection = 6;
-      renderExtraSkillLevelDots();
-    });
-  });
-  renderExtraSkillLevelDots();
-}
-
-function renderExtraSkillLevelDots() {
-  const dots = document.querySelectorAll("#extra-skill-level-dots .extra-skill-dot");
-  dots.forEach((dot) => {
-    const idx = parseInt(dot.dataset.index || "0", 10);
-    if (idx <= extraSkillLevelSelection) dot.classList.add("active");
-    else dot.classList.remove("active");
-  });
-}
-
 function openExtraSkillModal(item = null) {
   const modal = document.getElementById("extra-skill-modal");
   const title = document.getElementById("extra-skill-modal-title");
@@ -1341,15 +1317,39 @@ function closeExtraSkillModal() {
   if (saveBtn) saveBtn.textContent = "Add";
 
   extraSkillDependencySelection = [];
-  extraSkillLevelSelection = 0;
-  renderExtraSkillLevelDots();
+  extraSkillPointsSelection = 0;
+  renderExtraSkillPointDots();
   renderExtraSkillDependencyList();
   document.body.style.overflow = "";
+}
+
+function setupExtraSkillPointDots() {
+  const dots = document.querySelectorAll("#extra-skill-points-dots .extra-skill-dot");
+  dots.forEach((dot, i) => {
+    const idx = parseInt(dot.dataset.index || String(i + 1), 10);
+    dot.addEventListener("click", () => {
+      extraSkillPointsSelection = extraSkillPointsSelection === idx ? idx - 1 : idx;
+      if (extraSkillPointsSelection < 0) extraSkillPointsSelection = 0;
+      if (extraSkillPointsSelection > 6) extraSkillPointsSelection = 6;
+      renderExtraSkillPointDots();
+    });
+  });
+  renderExtraSkillPointDots();
+}
+
+function renderExtraSkillPointDots() {
+  const dots = document.querySelectorAll("#extra-skill-points-dots .extra-skill-dot");
+  dots.forEach((dot) => {
+    const idx = parseInt(dot.dataset.index || "0", 10);
+    if (idx <= extraSkillPointsSelection) dot.classList.add("active");
+    else dot.classList.remove("active");
+  });
 }
 
 function populateExtraSkillForm(item) {
   const idInput = document.getElementById("extra-skill-id");
   const nameInput = document.getElementById("extra-skill-name");
+  const levelInput = document.getElementById("extra-skill-level-input");
   const detailsInput = document.getElementById("extra-skill-details");
   const professionInput = document.getElementById("extra-skill-profession");
 
@@ -1358,22 +1358,24 @@ function populateExtraSkillForm(item) {
   if (!item) {
     if (idInput) idInput.value = "";
     nameInput.value = "";
+    if (levelInput) levelInput.value = "0";
     if (detailsInput) detailsInput.value = "";
     if (professionInput) professionInput.checked = false;
-    extraSkillLevelSelection = 0;
     extraSkillDependencySelection = [];
-    renderExtraSkillLevelDots();
+    extraSkillPointsSelection = 0;
+    renderExtraSkillPointDots();
     renderExtraSkillDependencyList();
     return;
   }
 
   if (idInput) idInput.value = item.id;
   nameInput.value = item.name || "";
+  if (levelInput) levelInput.value = item.level ?? 0;
   if (detailsInput) detailsInput.value = item.details || "";
   if (professionInput) professionInput.checked = !!item.profession;
-  extraSkillLevelSelection = item.level || 0;
   extraSkillDependencySelection = Array.isArray(item.dependencies) ? [...item.dependencies] : [];
-  renderExtraSkillLevelDots();
+  extraSkillPointsSelection = item.points || 0;
+  renderExtraSkillPointDots();
   renderExtraSkillDependencyList();
 }
 
@@ -1457,6 +1459,7 @@ function onExtraSkillSubmit(event) {
 
   const idInput = document.getElementById("extra-skill-id");
   const nameInput = document.getElementById("extra-skill-name");
+  const levelInput = document.getElementById("extra-skill-level-input");
   const detailsInput = document.getElementById("extra-skill-details");
   const professionInput = document.getElementById("extra-skill-profession");
 
@@ -1468,11 +1471,16 @@ function onExtraSkillSubmit(event) {
     return;
   }
 
+  let level = parseInt(levelInput?.value || "0", 10);
+  if (Number.isNaN(level) || level < 0) level = 0;
+  if (level > 6) level = 6;
+
   const existingId = idInput?.value || "";
   const payload = {
     id: existingId || `extra-skill-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
     name,
-    level: extraSkillLevelSelection,
+    level,
+    points: extraSkillPointsSelection,
     details: detailsInput?.value.trim() || "",
     dependencies: [...extraSkillDependencySelection],
     profession: !!professionInput?.checked
@@ -1494,9 +1502,9 @@ function updateExtraSkillLevel(id, clickedLevel) {
   const item = sheetState.extraSkills.find((entry) => entry.id === id);
   if (!item) return;
 
-  item.level = item.level === clickedLevel ? clickedLevel - 1 : clickedLevel;
-  if (item.level < 0) item.level = 0;
-  if (item.level > 6) item.level = 6;
+  item.points = item.points === clickedLevel ? clickedLevel - 1 : clickedLevel;
+  if (item.points < 0) item.points = 0;
+  if (item.points > 6) item.points = 6;
   saveSheetStateToStorage();
   renderExtraSkillList();
 }
@@ -1508,7 +1516,7 @@ function removeExtraSkill(id) {
 }
 
 function rollExtraSkill(item) {
-  const ownLevel = item.level || 0;
+  const ownLevel = item.points || 0;
   const dependencyDice = getDependencyRollDice(item.dependencies);
   const totalDice = ownLevel + dependencyDice;
   if (totalDice <= 0) {
@@ -1547,7 +1555,7 @@ function renderExtraSkillList() {
           <div class="extra-skill-dots">
             ${Array.from({ length: 6 }, (_, index) => {
               const dotIndex = index + 1;
-              return `<button type="button" class="stat-dot extra-skill-card-dot ${dotIndex <= (item.level || 0) ? "active" : ""}" data-extra-skill-id="${item.id}" data-index="${dotIndex}"></button>`;
+              return `<button type="button" class="stat-dot extra-skill-card-dot ${dotIndex <= (item.points || 0) ? "active" : ""}" data-extra-skill-id="${item.id}" data-index="${dotIndex}"></button>`;
             }).join("")}
           </div>
           <div class="equipment-preview equipment-dependency-preview">

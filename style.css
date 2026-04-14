@@ -289,14 +289,16 @@ button:hover {
   grid-column: 1 / -1;
 }
 
-.extra-skill-level-dots,
+.extra-skill-points-field {
+  grid-column: 1 / -1;
+}
+
 .extra-skill-dots {
   display: flex;
   gap: 0.25rem;
   flex-wrap: wrap;
 }
 
-.extra-skill-dot,
 .extra-skill-card-dot {
   margin-top: 0;
 }
@@ -308,8 +310,9 @@ button:hover {
 .profession-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   width: auto;
+  white-space: nowrap;
 }
 
 .profession-toggle input {
@@ -562,6 +565,11 @@ button:hover {
   font-weight: 600;
 }
 
+.sheet-row > label.sheet-inline-label {
+  width: auto;
+  margin-left: 0.5rem;
+}
+
 .sheet-row input[type="text"],
 .sheet-row input[type="number"] {
   min-width: 0;
@@ -576,6 +584,10 @@ button:hover {
 .sheet-row input#char-name.char-name-input {
   flex: 0 1 240px;
   width: 240px;
+}
+
+.sheet-row input#char-exp {
+  width: 92px;
 }
 
 .sheet-row span {
