@@ -1,5 +1,15 @@
 /* ===== Base layout ===== */
 
+:root {
+  color-scheme: only light;
+}
+
+html,
+body {
+  background: #f4f1e9;
+  color: #111111;
+}
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   max-width: 1120px;
@@ -1436,19 +1446,23 @@ button:hover {
 }
 
 .stat-dot {
+  appearance: none;
+  -webkit-appearance: none;
   margin-top: 0;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid #333;
-  background: #fdfbf7;
+  border: 2px solid #333333 !important;
+  background: #fdfbf7 !important;
   padding: 0;
   cursor: pointer;
+  color: #111111;
+  forced-color-adjust: none;
 }
 
 /* filled dot = active point */
 .stat-dot.active {
-  background: #111;
+  background: #111111 !important;
 }
 
 .stat-dot,
@@ -1466,7 +1480,7 @@ button:hover {
   position: absolute;
   inset: 2px;
   border-radius: 50%;
-  background: #111;
+  background: #111111 !important;
 }
 
 /* succeed checkbox (attributes) */
