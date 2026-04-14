@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Interactive Character Sheet</title>
-  <link rel="stylesheet" href="style.css?v=4.10.11">
+  <link rel="stylesheet" href="style.css?v=4.10.12">
 </head>
 <body>
   <header class="page-header">
@@ -450,11 +450,12 @@
     </div>
 
     <!-- ================= RIGHT: CHARACTER SHEET ================= -->
-    <div class="sheet-panel">
-      <h2>Character Sheet (Role &amp; Roll)</h2>
+    <div class="sheet-panel sheet-column">
+      <div class="sheet-card character-info-card">
+        <h2>Character Info</h2>
 
-      <!-- upper section: name, health, defense, will, mental hearts -->
-      <div class="sheet-header">
+        <!-- upper section: name, health, defense, will, mental hearts -->
+        <div class="sheet-header">
         <div class="sheet-top-layout">
           <div class="sheet-top-fields">
             <div class="sheet-row">
@@ -532,7 +533,9 @@
           </div>
         </div>
       </div>
+      </div>
 
+      <div class="sheet-card equipment-card">
       <div class="equipment-block">
         <div class="equipment-header">
           <div class="equipment-title-row">
@@ -553,6 +556,7 @@
         <div id="equipment-list" class="equipment-list">
           <p class="equipment-empty">No equipment yet.</p>
         </div>
+      </div>
       </div>
 
       <div
@@ -723,6 +727,7 @@
         </div>
       </div>
 
+      <div class="sheet-card attributes-card">
       <!-- ===== Attributes ===== -->
       <h3 class="sheet-section-title">Attributes</h3>
       <p class="sheet-subtitle">
@@ -1619,6 +1624,7 @@
         </div>
 
       </div> <!-- /.ga-columns -->
+      </div>
     </div>
   </div>
 
@@ -1629,6 +1635,6 @@
     </p>
   </footer>
 
-  <script src="dice.js?v=4.10.11"></script>
+  <script src="dice.js?v=4.10.12"></script>
 </body>
 </html>
