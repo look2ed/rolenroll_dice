@@ -539,6 +539,30 @@ function getEquipmentRollDice(item) {
   return total;
 }
 
+function getEquipmentRollSuccessBonus(item) {
+  if (!Array.isArray(item.dependencies) || !item.dependencies.length) return 0;
+
+  let totalBonus = 0;
+
+  item.dependencies.forEach((id) => {
+    const option = statOptions.find((entry) => entry.id === id);
+    if (!option) return;
+
+    const selector =
+      option.role === "skill"
+        ? `.stat-row[data-role="skill"][data-skill="${id}"]`
+        : `.stat-row[data-role="attr"][data-stat="${id}"]`;
+
+    const row = document.querySelector(selector);
+    const checkbox = row?.querySelector(".stat-succeed");
+    if (checkbox?.checked) {
+      totalBonus += 1;
+    }
+  });
+
+  return totalBonus;
+}
+
 function rollEquipment(item) {
   const totalDice = getEquipmentRollDice(item);
   if (totalDice <= 0) {
@@ -549,11 +573,13 @@ function rollEquipment(item) {
   const specialInput = document.getElementById("special");
   const successInput = document.getElementById("success");
   const penaltyInput = document.getElementById("penalty");
+  let globalSuccess = parseInt(successInput?.value || "0", 10);
+  if (Number.isNaN(globalSuccess) || globalSuccess < 0) globalSuccess = 0;
 
   performRoll({
     total: totalDice,
     specialStr: specialInput?.value || "",
-    success: successInput?.value || "0",
+    success: globalSuccess + getEquipmentRollSuccessBonus(item),
     penalty: penaltyInput?.value || "0",
     equipmentDmg: item.dmg
   });
