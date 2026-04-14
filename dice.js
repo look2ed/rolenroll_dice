@@ -704,7 +704,7 @@ function saveSheetStateToStorage() {
       { id: "char-health",     key: "health" },
       { id: "char-health-max", key: "healthMax" },
       { id: "char-defense",    key: "defense" },
-      { id: "char-will",       key: "will" }
+      { id: "char-willpower",  key: "will" }
     ];
 
     globalMap.forEach(({ id, key }) => {
@@ -751,7 +751,7 @@ function loadSheetStateFromStorage() {
       { id: "char-health",     key: "health" },
       { id: "char-health-max", key: "healthMax" },
       { id: "char-defense",    key: "defense" },
-      { id: "char-will",       key: "will" }
+      { id: "char-willpower",  key: "will" }
     ];
 
     globalMap.forEach(({ id, key }) => {
@@ -784,7 +784,7 @@ function setupGlobalFieldPersistence() {
     { id: "char-health",     key: "health" },
     { id: "char-health-max", key: "healthMax" },
     { id: "char-defense",    key: "defense" },
-    { id: "char-will",       key: "will" }
+    { id: "char-willpower",  key: "will" }
   ];
 
   globalMap.forEach(({ id, key }) => {
