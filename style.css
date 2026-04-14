@@ -660,6 +660,7 @@ button:hover {
   align-items: center;
   gap: 0.35rem;
   width: auto;
+  min-width: 150px;
   font-size: 0.85rem;
   color: #6f675b;
 }
@@ -676,6 +677,12 @@ button:hover {
 
 .equipment-dmg-inline {
   font-size: 0.85rem;
+  min-width: 95px;
+}
+
+.equipment-dmg-value {
+  display: inline-block;
+  min-width: 28px;
 }
 
 .status-preview {

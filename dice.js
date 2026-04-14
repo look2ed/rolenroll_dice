@@ -586,7 +586,10 @@ function renderEquipmentList() {
         <div class="equipment-item-info">
           <span class="equipment-name">${escapeHtml(item.name || "")}</span>
           <div class="equipment-preview">
-            <span class="equipment-number-inline equipment-dmg-inline">DMG: ${escapeHtml(item.dmg || "-")}</span>
+            <span class="equipment-number-inline equipment-dmg-inline">
+              <span>DMG</span>
+              <span class="equipment-dmg-value">${escapeHtml(item.dmg || "-")}</span>
+            </span>
             <label class="equipment-number-inline">
               <span>Charge</span>
               <input type="number" min="0" value="${escapeHtml(item.charge ?? 0)}" data-equipment-id="${item.id}" data-equipment-field="charge" aria-label="Charge for ${escapeHtml(item.name || "equipment")}">
