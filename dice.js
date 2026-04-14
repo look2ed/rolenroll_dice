@@ -554,7 +554,8 @@ function rollEquipment(item) {
     total: totalDice,
     specialStr: specialInput?.value || "",
     success: successInput?.value || "0",
-    penalty: penaltyInput?.value || "0"
+    penalty: penaltyInput?.value || "0",
+    equipmentDmg: item.dmg
   });
 }
 
@@ -599,7 +600,7 @@ function renderEquipmentList() {
               <input type="number" min="0" value="${escapeHtml(item.def ?? 0)}" data-equipment-id="${item.id}" data-equipment-field="def" aria-label="DEF for ${escapeHtml(item.name || "equipment")}">
             </label>
             <label class="equipment-number-inline">
-              <span>Toughness</span>
+              <span>TOUGH</span>
               <input type="number" min="0" value="${escapeHtml(item.toughness ?? 0)}" data-equipment-id="${item.id}" data-equipment-field="toughness" aria-label="Toughness for ${escapeHtml(item.name || "equipment")}">
             </label>
           </div>
@@ -1400,7 +1401,7 @@ function renderHistory() {
 
 // ---------- core roll executor (used by form + stats) ----------
 
-function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
+function performRoll({ total, specialStr, success = 0, penalty = 0, equipmentDmg = null }) {
   const totalNum = parseInt(total ?? 0, 10);
   if (isNaN(totalNum) || totalNum <= 0) {
     alert("Please enter a valid total number of dice (at least 1).");
@@ -1486,6 +1487,23 @@ function performRoll({ total, specialStr, success = 0, penalty = 0 }) {
 
   const elTotal = document.getElementById("total-points");
   if (elTotal) elTotal.textContent = finalTotal;
+
+  const equipmentDmgSummary = document.getElementById("equipment-dmg-summary");
+  const equipmentTotalDmg = document.getElementById("equipment-total-dmg");
+  let parsedEquipmentDmg = parseInt(equipmentDmg ?? "", 10);
+  if (Number.isNaN(parsedEquipmentDmg) || parsedEquipmentDmg < 0) {
+    parsedEquipmentDmg = null;
+  }
+
+  if (equipmentDmgSummary && equipmentTotalDmg) {
+    if (parsedEquipmentDmg != null) {
+      equipmentDmgSummary.classList.remove("hidden");
+      equipmentTotalDmg.textContent = finalTotal * parsedEquipmentDmg;
+    } else {
+      equipmentDmgSummary.classList.add("hidden");
+      equipmentTotalDmg.textContent = "0";
+    }
+  }
 
   if (openResultModalBtn) {
     openResultModalBtn.classList.remove("hidden");
