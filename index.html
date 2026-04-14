@@ -3,54 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.6.0">
+  <link rel="stylesheet" href="style.css?v=4.6.1">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
 
   <div class="layout">
     <!-- ================= LEFT: DICE PANEL ================= -->
-    <div class="dice-panel">
-      <h2>Dice Roller</h2>
+    <div class="left-column">
+      <div class="dice-panel">
+        <h2>Dice Roller</h2>
 
-      <form id="dice-form">
-        <div class="field">
-          <label for="total-dice">Total dice:</label>
-          <input id="total-dice" type="number" min="1" value="5" required>
-          <!-- help icon -->
-          <button
-            type="button"
-            id="help-toggle"
-            class="help-icon"
-            aria-label="Show/Hide manual"
-            aria-expanded="false"
-            aria-controls="manual-guide"
-          >
-            ?
-          </button>
-        </div>
+        <form id="dice-form">
+          <div class="field">
+            <label for="total-dice">Total dice:</label>
+            <input id="total-dice" type="number" min="1" value="5" required>
+            <!-- help icon -->
+            <button
+              type="button"
+              id="help-toggle"
+              class="help-icon"
+              aria-label="Show/Hide manual"
+              aria-expanded="false"
+              aria-controls="manual-guide"
+            >
+              ?
+            </button>
+          </div>
 
-        <div class="field">
-          <label for="special">Special dice:</label>
-          <input
-            id="special"
-            type="text"
-            placeholder="e.g. a1, n1 (a = positive, n = negative)"
-          >
-        </div>
+          <div class="field">
+            <label for="special">Special dice:</label>
+            <input
+              id="special"
+              type="text"
+              placeholder="e.g. a1, n1 (a = positive, n = negative)"
+            >
+          </div>
 
-        <div class="field">
-          <label for="success">Success:</label>
-          <input id="success" type="number" min="0" value="0">
-        </div>
+          <div class="field">
+            <label for="success">Success:</label>
+            <input id="success" type="number" min="0" value="0">
+          </div>
 
-        <div class="field">
-          <label for="penalty">Penalty:</label>
-          <input id="penalty" type="number" min="0" value="0">
-        </div>
+          <div class="field">
+            <label for="penalty">Penalty:</label>
+            <input id="penalty" type="number" min="0" value="0">
+          </div>
 
-        <button type="submit">Roll</button>
-      </form>
+          <button type="submit">Roll</button>
+        </form>
 
       <!-- Manual / Guide with TH & EN pages -->
       <div id="manual-guide" class="manual hidden">
@@ -140,17 +141,17 @@
         </div>
       </div>
 
-      <div class="result-actions">
-        <button
-          type="button"
-          id="open-result-modal"
-          class="open-result-modal hidden"
-          aria-haspopup="dialog"
-          aria-controls="result-modal"
-        >
-          View Latest Result
-        </button>
-      </div>
+        <div class="result-actions">
+          <button
+            type="button"
+            id="open-result-modal"
+            class="open-result-modal hidden"
+            aria-haspopup="dialog"
+            aria-controls="result-modal"
+          >
+            View Latest Result
+          </button>
+        </div>
 
       <div
         id="result-modal"
@@ -204,27 +205,29 @@
         </div>
       </div>
 
-      <h2 class="history-title">
-        <span>History</span>
-        <button
-          type="button"
-          id="history-toggle"
-          class="history-toggle"
-          aria-label="Show/Hide history"
-          aria-expanded="false"
-          aria-controls="history-panel"
-        >
-          🕒
-        </button>
-      </h2>
+        <h2 class="history-title">
+          <span>History</span>
+          <button
+            type="button"
+            id="history-toggle"
+            class="history-toggle"
+            aria-label="Show/Hide history"
+            aria-expanded="false"
+            aria-controls="history-panel"
+          >
+            🕒
+          </button>
+        </h2>
 
-      <div id="history-panel" class="history hidden">
-        <div id="history-list" class="history-list">
-          <p class="history-empty">No rolls yet.</p>
+        <div id="history-panel" class="history hidden">
+          <div id="history-list" class="history-list">
+            <p class="history-empty">No rolls yet.</p>
+          </div>
         </div>
       </div>
 
-      <div class="items-block">
+      <div class="items-panel">
+        <div class="items-block">
         <div class="equipment-header">
           <div class="equipment-title-row">
             <h3 class="sheet-section-title equipment-title">Items</h3>
@@ -244,6 +247,7 @@
         <div id="item-list" class="item-list">
           <p class="equipment-empty">No items yet.</p>
         </div>
+      </div>
       </div>
 
       <div
@@ -291,6 +295,7 @@
                 <button type="button" id="cancel-item-btn">Cancel</button>
               </div>
             </form>
+          </div>
           </div>
         </div>
       </div>
@@ -1422,6 +1427,6 @@
     </div>
   </div>
 
-  <script src="dice.js?v=4.6.0"></script>
+  <script src="dice.js?v=4.6.1"></script>
 </body>
 </html>
