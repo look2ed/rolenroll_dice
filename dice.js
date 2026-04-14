@@ -12,14 +12,20 @@ let equipmentDependencySelection = [];
 let extraSkillDependencySelection = [];
 let extraSkillPointsSelection = 0;
 
-// key for localStorage
-const STORAGE_KEY = "rolenroll_sheet_state_v1";
+const LEGACY_STORAGE_KEY = "rolenroll_sheet_state_v1";
+const SHEET_STORAGE_PREFIX = "rolenroll_sheet_state_v2_";
+const SHEET_INDEX_KEY = "rolenroll_sheet_index_v1";
+const ACTIVE_SHEET_KEY = "rolenroll_active_sheet_v1";
+const DEFAULT_HEART_COUNT = 20;
+let currentSheetId = "";
+let sheetDirectory = [];
 
 // central sheet state
 const sheetState = {
   attrs: {},   // e.g. { str: 3, dex: 2, int: 4, ... }
   skills: {},  // e.g. { search: 2, art: 1, ... }
   successChecks: {},
+  hearts: [],
   globals: {}, // e.g. { name, health, healthMax, defense, will }
   equipment: [],
   statuses: [],
@@ -28,6 +34,8 @@ const sheetState = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  initSheetManager();
+
   // 1) Load saved sheet state FIRST (so attrs/skills are ready)
   loadSheetStateFromStorage();
 
@@ -115,6 +123,227 @@ document.addEventListener("DOMContentLoaded", () => {
   // 13) Extra skill block and modal
   setupExtraSkills();
 });
+
+function createSheetId() {
+  return `sheet-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function getDefaultHearts() {
+  return Array.from({ length: DEFAULT_HEART_COUNT }, () => true);
+}
+
+function createDefaultSheetPayload(name = "") {
+  return {
+    attrs: {},
+    skills: {},
+    successChecks: {},
+    hearts: getDefaultHearts(),
+    globals: {
+      name,
+      level: "0",
+      exp: "0/0",
+      health: "10",
+      healthMax: "10",
+      defense: "0",
+      will: "0"
+    },
+    equipment: [],
+    statuses: [],
+    items: [],
+    extraSkills: []
+  };
+}
+
+function getSheetStorageKey(sheetId) {
+  return `${SHEET_STORAGE_PREFIX}${sheetId}`;
+}
+
+function loadSheetDirectoryFromStorage() {
+  try {
+    const raw = localStorage.getItem(SHEET_INDEX_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("Could not load sheet directory:", error);
+    return [];
+  }
+}
+
+function saveSheetDirectoryToStorage() {
+  try {
+    localStorage.setItem(SHEET_INDEX_KEY, JSON.stringify(sheetDirectory));
+  } catch (error) {
+    console.warn("Could not save sheet directory:", error);
+  }
+}
+
+function getSheetDisplayName(sheet) {
+  return sheet?.name?.trim() || "Untitled Character";
+}
+
+function updateCurrentSheetName(name) {
+  const sheet = sheetDirectory.find((entry) => entry.id === currentSheetId);
+  if (!sheet) return;
+  sheet.name = name?.trim() || "Untitled Character";
+  saveSheetDirectoryToStorage();
+  renderSheetTabs();
+}
+
+function renderSheetTabs() {
+  const tabs = document.getElementById("sheet-tabs");
+  if (!tabs) return;
+
+  tabs.innerHTML = sheetDirectory
+    .map((sheet) => `<button type="button" class="sheet-tab ${sheet.id === currentSheetId ? "is-active" : ""}" data-sheet-id="${sheet.id}" title="${escapeHtml(getSheetDisplayName(sheet))}">${escapeHtml(getSheetDisplayName(sheet))}</button>`)
+    .join("");
+}
+
+function createNewSheet(initialName = "") {
+  const id = createSheetId();
+  const fallbackName = `Character ${sheetDirectory.length + 1}`;
+  const displayName = initialName.trim() || fallbackName;
+  const payload = createDefaultSheetPayload(initialName.trim());
+
+  sheetDirectory.push({ id, name: displayName });
+  saveSheetDirectoryToStorage();
+  localStorage.setItem(getSheetStorageKey(id), JSON.stringify(payload));
+  return id;
+}
+
+function migrateLegacySheetIfNeeded() {
+  const existingSheets = loadSheetDirectoryFromStorage();
+  if (existingSheets.length) return existingSheets;
+
+  const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!legacyRaw) return existingSheets;
+
+  try {
+    const legacyData = JSON.parse(legacyRaw);
+    const migratedId = createSheetId();
+    const migratedName = legacyData?.globals?.name?.trim() || "Character 1";
+    localStorage.setItem(getSheetStorageKey(migratedId), JSON.stringify({
+      ...createDefaultSheetPayload(legacyData?.globals?.name || ""),
+      ...legacyData,
+      successChecks: legacyData?.successChecks || {},
+      hearts: Array.isArray(legacyData?.hearts) ? legacyData.hearts : getDefaultHearts(),
+      globals: {
+        ...createDefaultSheetPayload("").globals,
+        ...(legacyData?.globals || {})
+      }
+    }));
+    const migratedSheets = [{ id: migratedId, name: migratedName }];
+    localStorage.setItem(SHEET_INDEX_KEY, JSON.stringify(migratedSheets));
+    return migratedSheets;
+  } catch (error) {
+    console.warn("Could not migrate legacy sheet data:", error);
+    return existingSheets;
+  }
+}
+
+function initSheetManager() {
+  sheetDirectory = migrateLegacySheetIfNeeded();
+  if (!sheetDirectory.length) {
+    createNewSheet("");
+  }
+  sheetDirectory = loadSheetDirectoryFromStorage();
+
+  const tabs = document.getElementById("sheet-tabs");
+  const newSheetBtn = document.getElementById("new-sheet-btn");
+  const savedActiveSheetId = sessionStorage.getItem(ACTIVE_SHEET_KEY);
+  currentSheetId = sheetDirectory.some((sheet) => sheet.id === savedActiveSheetId)
+    ? savedActiveSheetId
+    : sheetDirectory[0]?.id || "";
+
+  if (currentSheetId) {
+    sessionStorage.setItem(ACTIVE_SHEET_KEY, currentSheetId);
+  }
+
+  if (tabs) {
+    tabs.addEventListener("click", (event) => {
+      const tab = event.target.closest(".sheet-tab[data-sheet-id]");
+      if (!tab) return;
+      switchToSheet(tab.dataset.sheetId);
+    });
+  }
+
+  if (newSheetBtn) {
+    newSheetBtn.addEventListener("click", () => {
+      const nextId = createNewSheet("");
+      switchToSheet(nextId);
+    });
+  }
+
+  renderSheetTabs();
+}
+
+function resetSheetState() {
+  Object.keys(sheetState.attrs).forEach((key) => delete sheetState.attrs[key]);
+  Object.keys(sheetState.skills).forEach((key) => delete sheetState.skills[key]);
+  Object.keys(sheetState.successChecks).forEach((key) => delete sheetState.successChecks[key]);
+  sheetState.hearts = [];
+  sheetState.globals = {};
+  sheetState.equipment = [];
+  sheetState.statuses = [];
+  sheetState.items = [];
+  sheetState.extraSkills = [];
+}
+
+function applySheetStateToUI() {
+  const globalMap = [
+    { id: "char-name", key: "name", fallback: "" },
+    { id: "char-level", key: "level", fallback: "0" },
+    { id: "char-exp", key: "exp", fallback: "0/0" },
+    { id: "char-health", key: "health", fallback: "10" },
+    { id: "char-health-max", key: "healthMax", fallback: "10" },
+    { id: "char-defense", key: "defense", fallback: "0" },
+    { id: "char-willpower", key: "will", fallback: "0" }
+  ];
+
+  globalMap.forEach(({ id, key, fallback }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = sheetState.globals?.[key] != null ? sheetState.globals[key] : fallback;
+  });
+
+  const hearts = document.querySelectorAll(".mental-heart");
+  const heartState = Array.isArray(sheetState.hearts) && sheetState.hearts.length
+    ? sheetState.hearts
+    : getDefaultHearts();
+  hearts.forEach((btn, idx) => {
+    const on = heartState[idx] !== false;
+    btn.classList.remove("on", "off");
+    btn.classList.add(on ? "on" : "off");
+  });
+
+  document.querySelectorAll('.stat-row[data-role="attr"]').forEach((row) => {
+    const key = row.dataset.stat;
+    updateStatDots(row, sheetState.attrs[key] || 0);
+    const checkbox = row.querySelector(".stat-succeed");
+    if (checkbox) checkbox.checked = !!sheetState.successChecks[getStatSuccessKey(row)];
+  });
+
+  document.querySelectorAll('.stat-row[data-role="skill"]').forEach((row) => {
+    const key = row.dataset.skill || row.dataset.stat;
+    updateStatDots(row, sheetState.skills[key] || 0);
+    const checkbox = row.querySelector(".stat-succeed");
+    if (checkbox) checkbox.checked = !!sheetState.successChecks[getStatSuccessKey(row)];
+  });
+
+  renderEquipmentList();
+  renderStatusList();
+  renderItemList();
+  renderExtraSkillList();
+  renderSheetTabs();
+}
+
+function switchToSheet(sheetId) {
+  if (!sheetDirectory.some((sheet) => sheet.id === sheetId)) return;
+  saveSheetStateToStorage();
+  currentSheetId = sheetId;
+  sessionStorage.setItem(ACTIVE_SHEET_KEY, currentSheetId);
+  loadSheetStateFromStorage();
+  applySheetStateToUI();
+}
 
 function setupResultModal() {
   resultModal = document.getElementById("result-modal");
@@ -2242,15 +2471,19 @@ function updateStatDots(row, value) {
 
 function saveSheetStateToStorage() {
   try {
+    if (!currentSheetId) return;
+
     const hearts = Array.from(document.querySelectorAll(".mental-heart")).map(
       (btn) => !btn.classList.contains("off") // true if ON, false if OFF
     );
+    sheetState.hearts = hearts;
 
     const globals = {};
 
-    // 👉 Make sure IDs match your HTML
     const globalMap = [
       { id: "char-name",       key: "name" },
+      { id: "char-level",      key: "level" },
+      { id: "char-exp",        key: "exp" },
       { id: "char-health",     key: "health" },
       { id: "char-health-max", key: "healthMax" },
       { id: "char-defense",    key: "defense" },
@@ -2265,12 +2498,13 @@ function saveSheetStateToStorage() {
     });
 
     sheetState.globals = globals;
+    updateCurrentSheetName(globals.name || "");
 
     const payload = {
       attrs: sheetState.attrs || {},
       skills: sheetState.skills || {},
       successChecks: sheetState.successChecks || {},
-      hearts,
+      hearts: sheetState.hearts || [],
       globals,
       equipment: sheetState.equipment || [],
       statuses: sheetState.statuses || [],
@@ -2278,7 +2512,7 @@ function saveSheetStateToStorage() {
       extraSkills: sheetState.extraSkills || []
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(getSheetStorageKey(currentSheetId), JSON.stringify(payload));
   } catch (e) {
     console.warn("Could not save sheet state:", e);
   }
@@ -2286,12 +2520,24 @@ function saveSheetStateToStorage() {
 
 function loadSheetStateFromStorage() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    resetSheetState();
+
+    if (!currentSheetId) return;
+
+    const raw = localStorage.getItem(getSheetStorageKey(currentSheetId));
+    if (!raw) {
+      const fallback = createDefaultSheetPayload("");
+      localStorage.setItem(getSheetStorageKey(currentSheetId), JSON.stringify(fallback));
+      Object.assign(sheetState.attrs, fallback.attrs);
+      Object.assign(sheetState.skills, fallback.skills);
+      Object.assign(sheetState.successChecks, fallback.successChecks);
+      sheetState.hearts = fallback.hearts;
+      sheetState.globals = fallback.globals;
+      return;
+    }
 
     const data = JSON.parse(raw);
 
-    // Mutate existing objects, do NOT reassign
     if (data.attrs && typeof data.attrs === "object") {
       Object.assign(sheetState.attrs, data.attrs);
     }
@@ -2301,15 +2547,20 @@ function loadSheetStateFromStorage() {
     if (data.successChecks && typeof data.successChecks === "object") {
       Object.assign(sheetState.successChecks, data.successChecks);
     }
-    sheetState.globals = data.globals || {};
+    sheetState.hearts = Array.isArray(data.hearts) ? data.hearts : getDefaultHearts();
+    sheetState.globals = {
+      ...createDefaultSheetPayload("").globals,
+      ...(data.globals || {})
+    };
     sheetState.equipment = Array.isArray(data.equipment) ? data.equipment : [];
     sheetState.statuses = Array.isArray(data.statuses) ? data.statuses : [];
     sheetState.items = Array.isArray(data.items) ? data.items : [];
     sheetState.extraSkills = Array.isArray(data.extraSkills) ? data.extraSkills : [];
 
-    // restore header fields
     const globalMap = [
       { id: "char-name",       key: "name" },
+      { id: "char-level",      key: "level" },
+      { id: "char-exp",        key: "exp" },
       { id: "char-health",     key: "health" },
       { id: "char-health-max", key: "healthMax" },
       { id: "char-defense",    key: "defense" },
@@ -2318,22 +2569,17 @@ function loadSheetStateFromStorage() {
 
     globalMap.forEach(({ id, key }) => {
       const el = document.getElementById(id);
-      if (el && data.globals && data.globals[key] != null) {
-        el.value = data.globals[key];
+      if (el && sheetState.globals[key] != null) {
+        el.value = sheetState.globals[key];
       }
     });
 
-    // restore hearts (classes only; click handlers added later)
-    if (Array.isArray(data.hearts)) {
-      const hearts = document.querySelectorAll(".mental-heart");
-      hearts.forEach((btn, idx) => {
-        const on = data.hearts[idx];
-        btn.classList.remove("on", "off");
-        if (on === false) btn.classList.add("off");
-        else btn.classList.add("on");
-      });
-    }
-    // attribute/skill dots are re-applied in setupStats()
+    const hearts = document.querySelectorAll(".mental-heart");
+    hearts.forEach((btn, idx) => {
+      const on = sheetState.hearts[idx] !== false;
+      btn.classList.remove("on", "off");
+      btn.classList.add(on ? "on" : "off");
+    });
   } catch (e) {
     console.warn("Could not load sheet state:", e);
   }
@@ -2343,6 +2589,8 @@ function loadSheetStateFromStorage() {
 function setupGlobalFieldPersistence() {
   const globalMap = [
     { id: "char-name",       key: "name" },
+    { id: "char-level",      key: "level" },
+    { id: "char-exp",        key: "exp" },
     { id: "char-health",     key: "health" },
     { id: "char-health-max", key: "healthMax" },
     { id: "char-defense",    key: "defense" },
