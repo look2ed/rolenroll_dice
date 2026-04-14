@@ -1359,13 +1359,17 @@ button:hover {
 
 /* mental hearts */
 .mental-hearts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
-  max-width: 255px;
+  display: grid;
+  grid-template-columns: repeat(10, 20px);
+  grid-auto-rows: 20px;
+  column-gap: 0.15rem;
+  row-gap: 0.15rem;
+  width: max-content;
 }
 
 .mental-heart {
+  appearance: none;
+  -webkit-appearance: none;
   margin-top: 0;
   width: 20px;
   height: 20px;

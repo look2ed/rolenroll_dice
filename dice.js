@@ -397,6 +397,9 @@ function applySheetStateToUI() {
 
   document.querySelectorAll('.stat-row[data-role="attr"]').forEach((row) => {
     const key = row.dataset.stat;
+    if (sheetState.attrs[key] == null || sheetState.attrs[key] < 1) {
+      sheetState.attrs[key] = 1;
+    }
     updateStatDots(row, sheetState.attrs[key] || 0);
     const checkbox = row.querySelector(".stat-succeed");
     if (checkbox) checkbox.checked = !!sheetState.successChecks[getStatSuccessKey(row)];
@@ -2401,8 +2404,10 @@ function setupAttrRow(row) {
   const key = row.dataset.stat;
   if (!key) return;
 
-  // use loaded value if present, else 0
-  sheetState.attrs[key] = sheetState.attrs[key] ?? 0;
+  // Attributes must stay at 1 or higher.
+  if (sheetState.attrs[key] == null || sheetState.attrs[key] < 1) {
+    sheetState.attrs[key] = 1;
+  }
   initDotsForRow(row, sheetState.attrs, key);
 
   const rollBtn = row.querySelector(".stat-roll-btn");
@@ -2513,7 +2518,11 @@ function setupSkillRow(row) {
 // initialize dots & clicking for a single row
 function initDotsForRow(row, store, key) {
   const dots = row.querySelectorAll(".stat-dot");
-  store[key] = store[key] ?? 0;
+  const isAttributeRow = (row.dataset.role || "attr") === "attr";
+  const minValue = isAttributeRow ? 1 : 0;
+  if (store[key] == null || store[key] < minValue) {
+    store[key] = minValue;
+  }
 
   dots.forEach((dot, i) => {
     const idxAttr = dot.dataset.index || dot.dataset.value;
@@ -2527,7 +2536,12 @@ function initDotsForRow(row, store, key) {
       } else {
         nextVal = idx;
       }
-      if (nextVal < 0) nextVal = 0;
+      if (nextVal < minValue) {
+        if (isAttributeRow) {
+          alert("Each Attribute must have at least 1 point.");
+        }
+        nextVal = minValue;
+      }
       if (nextVal > 6) nextVal = 6;
       store[key] = nextVal;
       updateStatDots(row, nextVal);
