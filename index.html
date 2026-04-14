@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Role & Roll Dice Roller</title>
-  <link rel="stylesheet" href="style.css?v=4.8.0">
+  <link rel="stylesheet" href="style.css?v=4.8.2">
 </head>
 <body>
   <h1>Role &amp; Roll Dice Roller</h1>
@@ -435,6 +435,16 @@
                 <textarea id="equipment-description" rows="4"></textarea>
               </label>
 
+              <div class="equipment-field equipment-dependency-field">
+                <div class="equipment-dependency-header">
+                  <span>Stat Dependencies :</span>
+                  <button type="button" id="open-equipment-dependency-modal" class="mini-add-btn">+ Add</button>
+                </div>
+                <div id="equipment-dependency-list" class="equipment-dependency-list">
+                  <p class="equipment-empty equipment-empty-inline">No stat dependencies selected.</p>
+                </div>
+              </div>
+
               <label class="equipment-field" for="equipment-dmg">
                 <span>DMG :</span>
                 <input type="text" id="equipment-dmg">
@@ -460,6 +470,37 @@
                 <button type="button" id="cancel-equipment-btn">Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="equipment-dependency-modal"
+        class="result-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="equipment-dependency-modal-title"
+      >
+        <div class="result-modal-backdrop" id="equipment-dependency-modal-backdrop"></div>
+        <div class="result-modal-panel equipment-modal-panel">
+          <div class="result-modal-header">
+            <h2 id="equipment-dependency-modal-title">Select Stat Dependencies</h2>
+            <button
+              type="button"
+              id="close-equipment-dependency-modal"
+              class="result-modal-close"
+              aria-label="Close equipment dependency form"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="result-modal-body">
+            <div id="equipment-dependency-options" class="dependency-options"></div>
+            <div class="equipment-form-actions">
+              <button type="button" id="save-equipment-dependency-btn">Save</button>
+              <button type="button" id="cancel-equipment-dependency-btn">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1433,6 +1474,6 @@
     </p>
   </footer>
 
-  <script src="dice.js?v=4.8.0"></script>
+  <script src="dice.js?v=4.8.2"></script>
 </body>
 </html>

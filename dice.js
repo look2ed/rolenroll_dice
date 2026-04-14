@@ -7,6 +7,8 @@ let resultModal;
 let openResultModalBtn;
 let closeResultModalBtn;
 let resultModalBackdrop;
+let statOptions = [];
+let equipmentDependencySelection = [];
 
 // key for localStorage
 const STORAGE_KEY = "rolenroll_sheet_state_v1";
@@ -86,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 6) Character-sheet hooks (after state is loaded)
   setupMentalHearts();
   setupStats();
+  statOptions = collectStatOptions();
 
   // 7) Header field persistence
   setupGlobalFieldPersistence();
@@ -152,6 +155,11 @@ function setupEquipment() {
   const backdrop = document.getElementById("equipment-modal-backdrop");
   const form = document.getElementById("equipment-form");
   const list = document.getElementById("equipment-list");
+  const openDependencyBtn = document.getElementById("open-equipment-dependency-modal");
+  const closeDependencyBtn = document.getElementById("close-equipment-dependency-modal");
+  const cancelDependencyBtn = document.getElementById("cancel-equipment-dependency-btn");
+  const saveDependencyBtn = document.getElementById("save-equipment-dependency-btn");
+  const dependencyBackdrop = document.getElementById("equipment-dependency-modal-backdrop");
 
   if (!list || !form) return;
 
@@ -171,6 +179,26 @@ function setupEquipment() {
     backdrop.addEventListener("click", closeEquipmentModal);
   }
 
+  if (openDependencyBtn) {
+    openDependencyBtn.addEventListener("click", openEquipmentDependencyModal);
+  }
+
+  if (closeDependencyBtn) {
+    closeDependencyBtn.addEventListener("click", closeEquipmentDependencyModal);
+  }
+
+  if (cancelDependencyBtn) {
+    cancelDependencyBtn.addEventListener("click", closeEquipmentDependencyModal);
+  }
+
+  if (saveDependencyBtn) {
+    saveDependencyBtn.addEventListener("click", saveEquipmentDependenciesFromModal);
+  }
+
+  if (dependencyBackdrop) {
+    dependencyBackdrop.addEventListener("click", closeEquipmentDependencyModal);
+  }
+
   form.addEventListener("submit", onEquipmentSubmit);
 
   list.addEventListener("click", (event) => {
@@ -184,6 +212,11 @@ function setupEquipment() {
 
     if (action === "edit") {
       openEquipmentModal(item);
+      return;
+    }
+
+    if (action === "roll") {
+      rollEquipment(item);
       return;
     }
 
@@ -221,6 +254,11 @@ function setupEquipment() {
     if (event.key === "Escape" && modal && !modal.classList.contains("hidden")) {
       closeEquipmentModal();
     }
+
+    const dependencyModal = document.getElementById("equipment-dependency-modal");
+    if (event.key === "Escape" && dependencyModal && !dependencyModal.classList.contains("hidden")) {
+      closeEquipmentDependencyModal();
+    }
   });
 }
 
@@ -233,6 +271,8 @@ function openEquipmentModal(item = null) {
   if (!modal || !form) return;
 
   populateEquipmentForm(item);
+  equipmentDependencySelection = Array.isArray(item?.dependencies) ? [...item.dependencies] : [];
+  renderEquipmentDependencyList();
 
   if (title) {
     title.textContent = item ? "Edit Equipment" : "Add Equipment";
@@ -248,6 +288,7 @@ function openEquipmentModal(item = null) {
 
 function closeEquipmentModal() {
   const modal = document.getElementById("equipment-modal");
+  const dependencyModal = document.getElementById("equipment-dependency-modal");
   const form = document.getElementById("equipment-form");
   const title = document.getElementById("equipment-modal-title");
   const saveBtn = document.getElementById("save-equipment-btn");
@@ -272,6 +313,13 @@ function closeEquipmentModal() {
   if (saveBtn) {
     saveBtn.textContent = "Add";
   }
+
+  if (dependencyModal) {
+    dependencyModal.classList.add("hidden");
+  }
+
+  equipmentDependencySelection = [];
+  renderEquipmentDependencyList();
 
   document.body.style.overflow = "";
 }
@@ -341,7 +389,8 @@ function onEquipmentSubmit(event) {
     dmg: dmgInput?.value.trim() || "",
     charge,
     def,
-    toughness
+    toughness,
+    dependencies: [...equipmentDependencySelection]
   };
 
   const existingIndex = sheetState.equipment.findIndex((item) => item.id === payload.id);
@@ -360,6 +409,134 @@ function removeEquipment(id) {
   sheetState.equipment = sheetState.equipment.filter((item) => item.id !== id);
   saveSheetStateToStorage();
   renderEquipmentList();
+}
+
+function collectStatOptions() {
+  return Array.from(document.querySelectorAll(".stat-row")).map((row) => {
+    const role = row.dataset.role || "attr";
+    const id = role === "skill" ? row.dataset.skill || "" : row.dataset.stat || "";
+    let label = "";
+
+    if (role === "skill") {
+      label = row.querySelector(".stat-name")?.textContent?.trim() || id;
+    } else {
+      label = row.querySelector(".stat-label")?.textContent?.trim() || id;
+    }
+
+    return { id, role, label };
+  }).filter((entry) => entry.id);
+}
+
+function renderEquipmentDependencyList() {
+  const container = document.getElementById("equipment-dependency-list");
+  if (!container) return;
+
+  if (!equipmentDependencySelection.length) {
+    container.innerHTML = '<p class="equipment-empty equipment-empty-inline">No stat dependencies selected.</p>';
+    return;
+  }
+
+  container.innerHTML = equipmentDependencySelection
+    .map((id) => statOptions.find((option) => option.id === id))
+    .filter(Boolean)
+    .map((option) => `<span class="dependency-chip">${escapeHtml(option.label)}</span>`)
+    .join("");
+}
+
+function openEquipmentDependencyModal() {
+  const modal = document.getElementById("equipment-dependency-modal");
+  const container = document.getElementById("equipment-dependency-options");
+  if (!modal || !container) return;
+
+  const attrs = statOptions.filter((option) => option.role === "attr");
+  const skills = statOptions.filter((option) => option.role === "skill");
+
+  container.innerHTML = `
+    <div class="dependency-group">
+      <h3>Attributes</h3>
+      <div class="dependency-grid">
+        ${attrs.map((option) => `
+          <label class="dependency-option">
+            <input type="checkbox" value="${option.id}" ${equipmentDependencySelection.includes(option.id) ? "checked" : ""}>
+            <span>${escapeHtml(option.label)}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+    <div class="dependency-group">
+      <h3>General Ability</h3>
+      <div class="dependency-grid">
+        ${skills.map((option) => `
+          <label class="dependency-option">
+            <input type="checkbox" value="${option.id}" ${equipmentDependencySelection.includes(option.id) ? "checked" : ""}>
+            <span>${escapeHtml(option.label)}</span>
+          </label>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closeEquipmentDependencyModal() {
+  const modal = document.getElementById("equipment-dependency-modal");
+  const equipmentModal = document.getElementById("equipment-modal");
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+  document.body.style.overflow =
+    equipmentModal && !equipmentModal.classList.contains("hidden") ? "hidden" : "";
+}
+
+function saveEquipmentDependenciesFromModal() {
+  const container = document.getElementById("equipment-dependency-options");
+  if (!container) return;
+
+  equipmentDependencySelection = Array.from(
+    container.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((input) => input.value);
+
+  renderEquipmentDependencyList();
+  closeEquipmentDependencyModal();
+}
+
+function getEquipmentRollDice(item) {
+  if (!Array.isArray(item.dependencies) || !item.dependencies.length) return 0;
+
+  let total = 0;
+  item.dependencies.forEach((id) => {
+    const option = statOptions.find((entry) => entry.id === id);
+    if (!option) return;
+
+    if (option.role === "attr") {
+      total += sheetState.attrs[id] || 0;
+    } else {
+      total += sheetState.skills[id] || 0;
+    }
+  });
+
+  return total;
+}
+
+function rollEquipment(item) {
+  const totalDice = getEquipmentRollDice(item);
+  if (totalDice <= 0) {
+    alert("This equipment has no usable stat dependencies yet. Add stat dependencies and make sure those stats have points.");
+    return;
+  }
+
+  const specialInput = document.getElementById("special");
+  const successInput = document.getElementById("success");
+  const penaltyInput = document.getElementById("penalty");
+
+  performRoll({
+    total: totalDice,
+    specialStr: specialInput?.value || "",
+    success: successInput?.value || "0",
+    penalty: penaltyInput?.value || "0"
+  });
 }
 
 function updateEquipmentNumberField(id, field, value) {
@@ -390,7 +567,7 @@ function renderEquipmentList() {
         <div class="equipment-item-info">
           <span class="equipment-name">${escapeHtml(item.name || "")}</span>
           <div class="equipment-preview">
-            <span>DMG: ${escapeHtml(item.dmg || "-")}</span>
+            <span class="equipment-number-inline equipment-dmg-inline">DMG: ${escapeHtml(item.dmg || "-")}</span>
             <label class="equipment-number-inline">
               <span>Charge</span>
               <input type="number" min="0" value="${escapeHtml(item.charge ?? 0)}" data-equipment-id="${item.id}" data-equipment-field="charge" aria-label="Charge for ${escapeHtml(item.name || "equipment")}">
@@ -404,8 +581,18 @@ function renderEquipmentList() {
               <input type="number" min="0" value="${escapeHtml(item.toughness ?? 0)}" data-equipment-id="${item.id}" data-equipment-field="toughness" aria-label="Toughness for ${escapeHtml(item.name || "equipment")}">
             </label>
           </div>
+          <div class="equipment-preview equipment-dependency-preview">
+            ${Array.isArray(item.dependencies) && item.dependencies.length
+              ? item.dependencies
+                  .map((id) => statOptions.find((option) => option.id === id))
+                  .filter(Boolean)
+                  .map((option) => `<span class="dependency-chip">${escapeHtml(option.label)}</span>`)
+                  .join("")
+              : '<span class="equipment-dependency-empty">No stat dependencies</span>'}
+          </div>
         </div>
         <div class="equipment-item-actions">
+          <button type="button" class="equipment-roll-btn" data-action="roll" data-id="${item.id}">Roll</button>
           <button type="button" class="icon-action-btn" data-action="edit" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name || "equipment")}">✎</button>
           <button type="button" class="icon-action-btn equipment-remove-btn" data-action="remove" data-id="${item.id}" aria-label="Remove ${escapeHtml(item.name || "equipment")}">⌫</button>
         </div>
