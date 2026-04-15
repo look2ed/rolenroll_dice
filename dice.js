@@ -37,6 +37,8 @@ const GENERAL_ABILITY_STARTING_POINTS = 18;
 const GENERAL_ABILITY_MAX_POINTS_KEY = "generalAbilityMaxPoints";
 const EXTRA_SKILL_STARTING_POINTS = 6;
 const EXTRA_SKILL_MAX_POINTS_KEY = "extraSkillMaxPoints";
+const DEFAULT_DEVELOPER_MESSAGE = "Welcome to Role & Roll Unofficial Interactive Character Sheet.\n\nEdit developer-message.txt to announce major changes, updates, or reminders to players.";
+const CONTACT_EMAIL = "kh.patternl@gmail.com";
 let currentSheetId = "";
 let sheetDirectory = [];
 
@@ -233,6 +235,12 @@ function setupHeaderMessageControls() {
   const tipModal = document.getElementById("tip-me-modal");
   const tipBackdrop = document.getElementById("tip-me-modal-backdrop");
   const closeTipBtn = document.getElementById("close-tip-me-modal");
+  const contactBtn = document.getElementById("contact-btn");
+  const contactModal = document.getElementById("contact-modal");
+  const contactBackdrop = document.getElementById("contact-modal-backdrop");
+  const closeContactBtn = document.getElementById("close-contact-modal");
+  const cancelContactBtn = document.getElementById("cancel-contact-btn");
+  const contactForm = document.getElementById("contact-form");
 
   function openModal(modal) {
     if (!modal) return;
@@ -250,13 +258,14 @@ function setupHeaderMessageControls() {
     if (developerContent) {
       developerContent.textContent = "Loading message...";
       try {
-        const response = await fetch(`developer-message.txt?v=5.3.6`, { cache: "no-store" });
+        const messageUrl = new URL("developer-message.txt?v=5.3.9", window.location.href);
+        const response = await fetch(messageUrl, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const message = (await response.text()).trim();
-        developerContent.textContent = message || "No developer message yet.";
+        developerContent.textContent = message || DEFAULT_DEVELOPER_MESSAGE;
       } catch (error) {
         console.warn("Could not load developer message:", error);
-        developerContent.textContent = "Could not load the developer message right now.";
+        developerContent.textContent = DEFAULT_DEVELOPER_MESSAGE;
       }
     }
     openModal(developerModal);
@@ -268,6 +277,16 @@ function setupHeaderMessageControls() {
   if (tipBtn) tipBtn.addEventListener("click", () => openModal(tipModal));
   if (closeTipBtn) closeTipBtn.addEventListener("click", () => closeModal(tipModal));
   if (tipBackdrop) tipBackdrop.addEventListener("click", () => closeModal(tipModal));
+  if (contactBtn) contactBtn.addEventListener("click", () => openModal(contactModal));
+  if (closeContactBtn) closeContactBtn.addEventListener("click", () => closeModal(contactModal));
+  if (cancelContactBtn) cancelContactBtn.addEventListener("click", () => closeModal(contactModal));
+  if (contactBackdrop) contactBackdrop.addEventListener("click", () => closeModal(contactModal));
+  if (contactForm) {
+    contactForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitContactForm(contactForm, contactModal);
+    });
+  }
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
@@ -277,7 +296,40 @@ function setupHeaderMessageControls() {
     if (tipModal && !tipModal.classList.contains("hidden")) {
       closeModal(tipModal);
     }
+    if (contactModal && !contactModal.classList.contains("hidden")) {
+      closeModal(contactModal);
+    }
   });
+}
+
+function submitContactForm(form, modal) {
+  const name = document.getElementById("contact-name")?.value.trim() || "";
+  const email = document.getElementById("contact-email")?.value.trim() || "";
+  const details = document.getElementById("contact-details")?.value.trim() || "";
+
+  if (!name || !email || !details) {
+    alert("Please fill in Name, Email, and Details.");
+    return;
+  }
+
+  if (!CONTACT_EMAIL) {
+    alert("Contact email is not set yet. Please add your email to CONTACT_EMAIL in dice.js.");
+    return;
+  }
+
+  const subject = encodeURIComponent("Role & Roll Character Sheet Feedback");
+  const body = encodeURIComponent([
+    `Name: ${name}`,
+    `Email: ${email}`,
+    "",
+    "Details:",
+    details
+  ].join("\n"));
+
+  window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  form.reset();
+  if (modal) modal.classList.add("hidden");
+  document.body.style.overflow = "";
 }
 
 function setupProgressionTabs(card, extraSkillPanel) {

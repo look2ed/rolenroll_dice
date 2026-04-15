@@ -14,7 +14,7 @@
 
     gtag('config', 'G-ZG63L28DHG');
   </script>
-  <link rel="stylesheet" href="style.css?v=5.3.6">
+  <link rel="stylesheet" href="style.css?v=5.3.9">
 </head>
 <body>
   <header class="page-header">
@@ -56,13 +56,16 @@
       </button>
       <button
         type="button"
+        id="contact-btn"
         class="header-icon-btn"
         aria-label="Contact by email"
         title="Contact"
+        aria-haspopup="dialog"
+        aria-controls="contact-modal"
       >
-        ✉
+        💌
       </button>
-      <div class="version-badge">v5.3.6</div>
+      <div class="version-badge">v5.3.9</div>
     </div>
   </header>
 
@@ -104,7 +107,7 @@
     <div class="result-modal-backdrop" id="tip-me-modal-backdrop"></div>
     <div class="result-modal-panel header-message-modal-panel">
       <div class="result-modal-header">
-        <h2 id="tip-me-modal-title">Tip Me</h2>
+        <h2 id="tip-me-modal-title">Tip Me เลี้ยงชานมไข่มุก</h2>
         <button
           type="button"
           id="close-tip-me-modal"
@@ -126,6 +129,50 @@
           Buy Me a Coffee
         </a>
         <p>Thank you for your love and support!</p>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="contact-modal"
+    class="result-modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="contact-modal-title"
+  >
+    <div class="result-modal-backdrop" id="contact-modal-backdrop"></div>
+    <div class="result-modal-panel header-message-modal-panel">
+      <div class="result-modal-header">
+        <h2 id="contact-modal-title">Contact Me</h2>
+        <button
+          type="button"
+          id="close-contact-modal"
+          class="result-modal-close"
+          aria-label="Close contact form"
+        >
+          ×
+        </button>
+      </div>
+      <div class="result-modal-body">
+        <p class="contact-intro">หากพบ bug หรือมีข้อเสนอแนะ สามารถแจ้งได้เลยนะคะ</p>
+        <form id="contact-form" class="contact-form">
+          <label class="equipment-field" for="contact-name">
+            <span>Name :</span>
+            <input type="text" id="contact-name" required>
+          </label>
+          <label class="equipment-field" for="contact-email">
+            <span>Email :</span>
+            <input type="email" id="contact-email" required>
+          </label>
+          <label class="equipment-field contact-details-field" for="contact-details">
+            <span>Details :</span>
+            <textarea id="contact-details" rows="6" required></textarea>
+          </label>
+          <div class="equipment-form-actions">
+            <button type="submit" id="submit-contact-btn">Submit</button>
+            <button type="button" id="cancel-contact-btn">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -2106,6 +2153,6 @@
     </p>
   </footer>
 
-  <script src="dice.js?v=5.3.6"></script>
+  <script src="dice.js?v=5.3.9"></script>
 </body>
 </html>

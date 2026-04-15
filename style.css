@@ -2436,6 +2436,23 @@ body.dice-drawer-open .dice-panel {
   background: #f4ddab;
 }
 
+.contact-intro {
+  margin-bottom: 1rem;
+  color: #34403e;
+  font-weight: 800;
+}
+
+.contact-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.contact-details-field,
+.contact-form .equipment-form-actions {
+  grid-column: 1 / -1;
+}
+
 .result-modal-header {
   position: sticky;
   top: 0;
@@ -2868,6 +2885,7 @@ body.dice-drawer-open .dice-panel {
   }
 
   .equipment-form,
+  .contact-form,
   .sheet-roll-number-row,
   .dependency-grid {
     grid-template-columns: minmax(0, 1fr);
