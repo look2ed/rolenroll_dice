@@ -38,7 +38,7 @@ const GENERAL_ABILITY_MAX_POINTS_KEY = "generalAbilityMaxPoints";
 const EXTRA_SKILL_STARTING_POINTS = 6;
 const EXTRA_SKILL_MAX_POINTS_KEY = "extraSkillMaxPoints";
 const DEFAULT_DEVELOPER_MESSAGE = "Welcome to Role & Roll Unofficial Interactive Character Sheet.\n\nEdit developer-message.txt to announce major changes, updates, or reminders to players.";
-const CONTACT_EMAIL = "kh.patternl@gmail.com";
+const CONTACT_ENDPOINT = "https://formspree.io/f/xdayayrq";
 let currentSheetId = "";
 let sheetDirectory = [];
 
@@ -258,7 +258,7 @@ function setupHeaderMessageControls() {
     if (developerContent) {
       developerContent.textContent = "Loading message...";
       try {
-        const messageUrl = new URL("developer-message.txt?v=5.3.9", window.location.href);
+        const messageUrl = new URL("developer-message.txt?v=5.4.0", window.location.href);
         const response = await fetch(messageUrl, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const message = (await response.text()).trim();
@@ -302,34 +302,58 @@ function setupHeaderMessageControls() {
   });
 }
 
-function submitContactForm(form, modal) {
+async function submitContactForm(form, modal) {
   const name = document.getElementById("contact-name")?.value.trim() || "";
   const email = document.getElementById("contact-email")?.value.trim() || "";
   const details = document.getElementById("contact-details")?.value.trim() || "";
+  const messageEl = document.getElementById("contact-form-message");
+  const submitBtn = document.getElementById("submit-contact-btn");
+
+  function setMessage(text, type = "") {
+    if (!messageEl) return;
+    messageEl.textContent = text;
+    messageEl.classList.toggle("is-success", type === "success");
+    messageEl.classList.toggle("is-error", type === "error");
+  }
 
   if (!name || !email || !details) {
-    alert("Please fill in Name, Email, and Details.");
+    setMessage("Please fill in Name, Email, and Details.", "error");
     return;
   }
 
-  if (!CONTACT_EMAIL) {
-    alert("Contact email is not set yet. Please add your email to CONTACT_EMAIL in dice.js.");
-    return;
+  setMessage("Sending...");
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const response = await fetch(CONTACT_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        message: details,
+        source: "Role & Roll Interactive Character Sheet"
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    form.reset();
+    setMessage("Message sent. Thank you!", "success");
+    setTimeout(() => {
+      if (modal) modal.classList.add("hidden");
+      document.body.style.overflow = "";
+      setMessage("");
+    }, 900);
+  } catch (error) {
+    console.warn("Could not submit contact form:", error);
+    setMessage("Could not send message right now. Please try again later.", "error");
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
-
-  const subject = encodeURIComponent("Role & Roll Character Sheet Feedback");
-  const body = encodeURIComponent([
-    `Name: ${name}`,
-    `Email: ${email}`,
-    "",
-    "Details:",
-    details
-  ].join("\n"));
-
-  window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-  form.reset();
-  if (modal) modal.classList.add("hidden");
-  document.body.style.overflow = "";
 }
 
 function setupProgressionTabs(card, extraSkillPanel) {
