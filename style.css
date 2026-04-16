@@ -410,10 +410,9 @@ code {
   min-height: 100%;
 }
 
-.manual-roll-toggle {
+.manual-roll-toggle,
+.print-sheet-toggle {
   position: fixed;
-  left: 12px;
-  top: 46vh;
   z-index: 90;
   display: inline-flex;
   align-items: center;
@@ -430,13 +429,24 @@ code {
   box-shadow: var(--shadow);
   font-size: 1.6rem;
   line-height: 1;
+}
+
+.manual-roll-toggle {
+  left: 12px;
+  top: 46vh;
   transform: translateY(-50%);
 }
 
 .manual-roll-toggle:hover,
-.manual-roll-toggle[aria-expanded="true"] {
+.manual-roll-toggle[aria-expanded="true"],
+.print-sheet-toggle:hover {
   background: var(--brand-dark);
   color: #ffffff;
+}
+
+.print-sheet-toggle {
+  right: 12px;
+  bottom: 18px;
 }
 
 .manual-roll-close {
@@ -2861,15 +2871,24 @@ input[type="number"][readonly]::-webkit-inner-spin-button {
     justify-self: start;
   }
 
-  .manual-roll-toggle {
-    left: 8px;
-    top: auto;
-    bottom: 18px;
+  .manual-roll-toggle,
+  .print-sheet-toggle {
     width: 52px;
     height: 52px;
     padding: 0;
     font-size: 1.6rem;
+  }
+
+  .manual-roll-toggle {
+    left: 8px;
+    top: auto;
+    bottom: 18px;
     transform: none;
+  }
+
+  .print-sheet-toggle {
+    right: 8px;
+    bottom: 18px;
   }
 
   .dice-panel {

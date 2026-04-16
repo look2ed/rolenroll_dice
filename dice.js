@@ -37,6 +37,16 @@ const GENERAL_ABILITY_STARTING_POINTS = 18;
 const GENERAL_ABILITY_MAX_POINTS_KEY = "generalAbilityMaxPoints";
 const EXTRA_SKILL_STARTING_POINTS = 6;
 const EXTRA_SKILL_MAX_POINTS_KEY = "extraSkillMaxPoints";
+const PRINT_ATTRIBUTE_GROUPS = [
+  { title: "Physical", keys: ["str", "dex", "tou"] },
+  { title: "Intelligent and Emotion", keys: ["int", "apt", "san"] },
+  { title: "Personality", keys: ["cha", "rhe", "ego"] }
+];
+const PRINT_GENERAL_ABILITY_GROUPS = [
+  { title: "Academic", keys: ["general-education", "search", "history", "art", "medicine", "herb", "first-aid", "law", "electronic", "mechanical", "craft"] },
+  { title: "Intuition & Trained", keys: ["occult", "perception", "hide-seek", "persuade", "consider", "empathy", "bet", "sense-of-lie", "intimidate", "survival"] },
+  { title: "Physical Skills", keys: ["climb", "stealth", "brawl", "weapons", "sword-play", "throwing", "shooting-weapon", "reflex", "larceny", "athlete"] }
+];
 const DEFAULT_DEVELOPER_MESSAGE = "Welcome to Role & Roll Unofficial Interactive Character Sheet.\n\nEdit developer-message.txt to announce major changes, updates, or reminders to players.";
 const CONTACT_ENDPOINT = "https://formspree.io/f/xdayayrq";
 let currentSheetId = "";
@@ -196,6 +206,7 @@ function setupV5Layout() {
   }
 
   const toggleBtn = document.getElementById("manual-roll-toggle");
+  const printBtn = document.getElementById("print-sheet-toggle");
   const closeBtn = document.getElementById("manual-roll-close");
   const drawer = document.getElementById("dice-panel");
   const backdrop = document.getElementById("dice-drawer-backdrop");
@@ -221,11 +232,533 @@ function setupV5Layout() {
     backdrop.addEventListener("click", () => setDiceDrawerOpen(false));
   }
 
+  if (printBtn) {
+    printBtn.addEventListener("click", () => {
+      setDiceDrawerOpen(false);
+      saveSheetStateToStorage();
+      statOptions = collectStatOptions();
+      openPrintTemplate();
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && document.body.classList.contains("dice-drawer-open")) {
       setDiceDrawerOpen(false);
     }
   });
+}
+
+function openPrintTemplate() {
+  const printWindow = window.open("", "_blank", "width=1180,height=900");
+  if (!printWindow) {
+    alert("Unable to open the print window. Please allow pop-ups for this site.");
+    return;
+  }
+
+  printWindow.document.write(buildPrintDocument());
+  printWindow.document.close();
+  printWindow.focus();
+}
+
+function buildPrintDocument() {
+  return `<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>${escapeHtml((sheetState.globals?.name || "Character Sheet").trim() || "Character Sheet")} - Print</title>
+      <style>${buildPrintStyles()}</style>
+    </head>
+    <body>
+      ${buildPrintContent()}
+      <script>
+        window.addEventListener("load", () => {
+          setTimeout(() => window.print(), 120);
+        });
+      </script>
+    </body>
+  </html>`;
+}
+
+function buildPrintStyles() {
+  return `
+    :root {
+      color-scheme: light;
+      --ink: #203737;
+      --muted: #5a6764;
+      --line: #cfd8d3;
+      --brand: #23545a;
+      --soft: #eef4f1;
+      --paper: #fffdf8;
+      --gold: #b4873e;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 11px/1.35 Inter, system-ui, sans-serif;
+    }
+    body { padding: 10px; }
+    .print-sheet {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 10px;
+    }
+    .print-page {
+      display: grid;
+      gap: 10px;
+      break-after: page;
+    }
+    .print-page:last-child { break-after: auto; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 9px;
+      break-inside: avoid;
+    }
+    .panel h2, .panel h3, .panel h4, .panel p { margin: 0; }
+    .header {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+    .portrait {
+      width: 180px;
+      aspect-ratio: 3 / 4;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--soft);
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .header-grid {
+      display: grid;
+      gap: 8px;
+    }
+    .sheet-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+    .sheet-title h1 {
+      font-size: 22px;
+      line-height: 1.1;
+    }
+    .version {
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .meta-item, .text-block, .chip-list, .print-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 6px 8px;
+    }
+    .meta-item .label, .section-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .meta-item .value {
+      margin-top: 3px;
+      font-size: 15px;
+      font-weight: 850;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .section-heading {
+      margin-bottom: 6px;
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .sub-heading {
+      margin-bottom: 4px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .stats-grid {
+      display: grid;
+      gap: 6px;
+    }
+    .print-card {
+      display: grid;
+      gap: 4px;
+      min-height: 0;
+    }
+    .print-card-title {
+      font-weight: 850;
+      font-size: 12px;
+    }
+    .print-card-meta {
+      color: var(--muted);
+      font-size: 10px;
+    }
+    .dots {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+    .dot {
+      display: inline-block;
+      flex: 0 0 auto;
+      min-width: 10px;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+    }
+    .dot.inactive { color: rgba(35, 84, 90, 0.38); }
+    .succeed-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .succeed-tick {
+      color: var(--brand);
+      font-size: 11px;
+      line-height: 1;
+    }
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 30px;
+      align-content: start;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 7px;
+      border: 1px solid rgba(35, 84, 90, 0.18);
+      border-radius: 999px;
+      background: var(--soft);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .muted { color: var(--muted); }
+    .text-block {
+      min-height: 64px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .list {
+      display: grid;
+      gap: 6px;
+    }
+    .list-empty {
+      border: 1px dashed var(--line);
+      border-radius: 7px;
+      padding: 8px;
+      color: var(--muted);
+      background: #fff;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+    @media print {
+      body { padding: 0; }
+      .print-sheet { max-width: none; }
+      .panel, .print-card, .meta-item, .chip-list, .text-block {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+    }
+  `;
+}
+
+function buildPrintContent() {
+  const globals = sheetState.globals || {};
+  const image = globals.image || "";
+  const note = normalizeSavedNote(sheetState.note).trim();
+  const statuses = Array.isArray(sheetState.statuses) ? sheetState.statuses.map(normalizeStatusItem) : [];
+  const equipment = Array.isArray(sheetState.equipment) ? sheetState.equipment.map(normalizeEquipmentItem) : [];
+  const items = Array.isArray(sheetState.items) ? sheetState.items : [];
+  const extraSkills = Array.isArray(sheetState.extraSkills) ? sheetState.extraSkills : [];
+
+  return `
+    <main class="print-sheet">
+      <section class="print-page">
+        <section class="panel header">
+          <div class="portrait">${image ? `<img src="${image}" alt="Character portrait">` : "No Image"}</div>
+          <div class="header-grid">
+            <div class="sheet-title">
+              <h1>${escapeHtml(globals.name || "Character Name")}</h1>
+              <span class="version">Role & Roll Print Sheet</span>
+            </div>
+            <div class="meta-grid">
+              ${renderPrintMetaItem("Level", globals.level || "0")}
+              ${renderPrintMetaItem("EXP", `${globals.exp || "0"} / ${globals.expMax || "0"}`)}
+              ${renderPrintMetaItem("Health", `${globals.health || "0"} / ${globals.healthMax || "0"}`)}
+              ${renderPrintMetaItem("Will Power", globals.will || "0")}
+              ${renderPrintMetaItem("Defense", globals.defense || "0")}
+              ${renderPrintMetaItem("Mental", `${getCurrentMentalValue()} / ${getMentalMax()}`)}
+              ${renderPrintMetaItem("Gender", globals.gender || "-")}
+              ${renderPrintMetaItem("Age", globals.age || "-")}
+              ${renderPrintMetaItem("Race", globals.race || "-")}
+              ${renderPrintMetaItem("Will Source", globals.willSource || "-")}
+            </div>
+          </div>
+        </section>
+
+        <section class="two-col">
+          <section class="panel">
+            <h3 class="section-heading">Profile</h3>
+            <div class="text-block">${escapeHtml(globals.background || "No background.")}</div>
+          </section>
+          <section class="panel">
+            <h3 class="section-heading">Status Effects</h3>
+            ${renderPrintStatusList(statuses)}
+          </section>
+        </section>
+
+        <section class="two-col">
+          <section class="panel">
+            <h3 class="section-heading">Equipment</h3>
+            ${renderPrintEquipmentList(equipment)}
+          </section>
+          <section class="panel">
+            <h3 class="section-heading">Inventory</h3>
+            ${renderPrintItemList(items)}
+          </section>
+        </section>
+
+        <section class="panel">
+          <h3 class="section-heading">Note</h3>
+          <div class="text-block">${escapeHtml(note || "No note.")}</div>
+        </section>
+      </section>
+
+      <section class="print-page">
+        <section class="panel">
+          <h3 class="section-heading">Attributes</h3>
+          ${renderPrintAttributeGroups()}
+        </section>
+
+        <section class="panel">
+          <h3 class="section-heading">General Ability</h3>
+          ${renderPrintGeneralAbilityGroups()}
+        </section>
+
+        <section class="panel">
+          <h3 class="section-heading">Extra Skill</h3>
+          ${renderPrintExtraSkillList(extraSkills)}
+        </section>
+      </section>
+    </main>
+  `;
+}
+
+function renderPrintMetaItem(label, value) {
+  return `
+    <div class="meta-item">
+      <div class="label">${escapeHtml(label)}</div>
+      <div class="value">${escapeHtml(value)}</div>
+    </div>
+  `;
+}
+
+function renderPrintStatusList(statuses) {
+  if (!statuses.length) {
+    return '<div class="list-empty">No status effects.</div>';
+  }
+
+  return `
+    <div class="list">
+      ${statuses.map((item) => `
+        <div class="print-card">
+          <div class="print-card-title">${escapeHtml(item.name || "Status")}</div>
+          <div class="chip-list">
+            <span class="chip">${escapeHtml(getStatusTypeLabel(item.type))}</span>
+            <span class="chip">${escapeHtml(getStatusDurationText(item))}</span>
+            ${item.showOnBasic ? '<span class="chip">Show on Basic Info</span>' : ""}
+          </div>
+          <div class="print-card-meta">${escapeHtml(item.details || "No details.")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPrintEquipmentList(equipment) {
+  if (!equipment.length) {
+    return '<div class="list-empty">No equipment.</div>';
+  }
+
+  return `
+    <div class="list">
+      ${equipment.map((item) => `
+        <div class="print-card">
+          <div class="print-card-title">${escapeHtml(item.name || "Equipment")}</div>
+          <div class="chip-list">
+            <span class="chip">${escapeHtml(getEquipmentSlotLabel(item.slot))}</span>
+            ${item.stats?.dmg ? `<span class="chip">DMG ${escapeHtml(item.dmg || "-")}</span>` : ""}
+            ${item.stats?.charge ? `<span class="chip">Charge ${escapeHtml(item.charge || 0)}</span>` : ""}
+            ${item.stats?.def ? `<span class="chip">DEF ${escapeHtml(item.def || 0)}</span>` : ""}
+            ${item.stats?.toughness ? `<span class="chip">Toughness ${escapeHtml(item.toughness || 0)}</span>` : ""}
+          </div>
+          <div class="print-card-meta">${escapeHtml(item.description || "No details.")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPrintItemList(items) {
+  if (!items.length) {
+    return '<div class="list-empty">No inventory items.</div>';
+  }
+
+  return `
+    <div class="list">
+      ${items.map((item) => `
+        <div class="print-card">
+          <div class="print-card-title">${escapeHtml(item.name || "Item")}</div>
+          <div class="print-card-meta">Amount: ${escapeHtml(item.amount ?? 0)}</div>
+          <div class="print-card-meta">${escapeHtml(item.details || "No details.")}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPrintAttributeGroups() {
+  const labelMap = new Map(collectStatOptions().filter((entry) => entry.role === "attr").map((entry) => [entry.id, entry.label]));
+  return `
+    <div class="three-col">
+      ${PRINT_ATTRIBUTE_GROUPS.map((group) => `
+        <section class="stats-grid">
+          <h4 class="sub-heading">${escapeHtml(group.title)}</h4>
+          ${group.keys.map((key) => renderPrintStatCard(
+            labelMap.get(key) || key.toUpperCase(),
+            sheetState.attrs[key] ?? 1,
+            "",
+            !!sheetState.successChecks[`attr:${key}`]
+          )).join("")}
+        </section>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPrintGeneralAbilityGroups() {
+  const optionMap = new Map(collectStatOptions().filter((entry) => entry.role === "skill").map((entry) => [entry.id, entry]));
+  return `
+    <div class="three-col">
+      ${PRINT_GENERAL_ABILITY_GROUPS.map((group) => `
+        <section class="stats-grid">
+          <h4 class="sub-heading">${escapeHtml(group.title)}</h4>
+          ${group.keys.map((key) => {
+            const option = optionMap.get(key);
+            if (!option) return "";
+            const value = sheetState.skills[key] ?? 0;
+            const attrText = option.altAttr
+              ? `${option.attr.toUpperCase()} / ${option.altAttr.toUpperCase()}`
+              : option.attr.toUpperCase();
+            return renderPrintStatCard(
+              option.label,
+              value,
+              attrText,
+              !!sheetState.successChecks[`skill:${key}`]
+            );
+          }).join("")}
+        </section>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPrintExtraSkillList(extraSkills) {
+  if (!extraSkills.length) {
+    return '<div class="list-empty">No extra skills.</div>';
+  }
+
+  return `
+    <div class="three-col">
+      ${extraSkills.map((item) => {
+        const dependencies = Array.isArray(item.dependencies) && item.dependencies.length
+          ? item.dependencies
+              .map((id) => statOptions.find((option) => option.id === id)?.label)
+              .filter(Boolean)
+              .join(", ")
+          : "No related stat(s)";
+        return `
+          <div class="print-card">
+            <div class="print-card-title">${escapeHtml(item.name || "Extra Skill")}</div>
+            <div class="chip-list">
+              <span class="chip">LV. ${escapeHtml(item.level ?? 0)}</span>
+              <span class="chip">Points ${escapeHtml(item.points || 0)}</span>
+              ${item.profession ? '<span class="chip">PRO +1 Succeed</span>' : ""}
+            </div>
+            <div class="print-card-meta">${escapeHtml(dependencies)}</div>
+            <div class="print-card-meta">${escapeHtml(item.details || "No details.")}</div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderPrintStatCard(label, value, meta = "", hasSucceed = false) {
+  return `
+    <div class="print-card">
+      <div class="print-card-title">${escapeHtml(label)}</div>
+      ${meta ? `<div class="print-card-meta">${escapeHtml(meta)}</div>` : ""}
+      <div class="dots">${renderPrintDots(value)}</div>
+      <div class="succeed-line">
+        <span class="succeed-tick">${hasSucceed ? "☑" : "☐"}</span>
+        <span>+1 Succeed</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderPrintDots(value) {
+  const total = 6;
+  const activeCount = Math.max(0, Math.min(total, parseInt(value ?? 0, 10) || 0));
+  return Array.from({ length: total }, (_, index) => {
+    const active = index < activeCount;
+    return `<span class="dot ${active ? "active" : "inactive"}">${active ? "●" : "○"}</span>`;
+  }).join("");
 }
 
 function setupHeaderMessageControls() {
