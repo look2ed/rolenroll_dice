@@ -538,7 +538,7 @@ function getSpentAttributePoints() {
     .reduce((total, row) => {
       const key = row.dataset.stat;
       const value = sheetState.attrs[key] ?? 1;
-      return total + Math.max(1, value);
+      return total + Math.max(0, value - 1);
     }, 0);
 }
 
