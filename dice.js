@@ -2407,12 +2407,12 @@ function updateDerivedCharacterVitals() {
   const healthInput = document.getElementById("char-health");
   const healthMaxInput = document.getElementById("char-health-max");
 
-  const defaultHealthMax = BASE_HEALTH;
-  const overrideHealthMax = parseInt(sheetState.globals?.[HEALTH_MAX_OVERRIDE_KEY] ?? "", 10);
-  const inputMax = parseInt(healthMaxInput.value || "0", 10);
-  const nextHealthMax = Number.isFinite(inputMax) && inputMax >= 0
-    ? inputMax
-    : defaultHealthMax;
+  const parsedMax = parseInt(sheetState.globals?.healthMax ?? "", 10);
+
+  const safeHealthMax =
+    Number.isFinite(parsedMax) && parsedMax > 0
+      ? parsedMax
+      : BASE_HEALTH;
 
   if (healthInput && healthMaxInput) {
     const previousMax = parseInt(healthMaxInput.value || String(nextHealthMax), 10);
@@ -2429,47 +2429,16 @@ function updateDerivedCharacterVitals() {
       nextCurrent = nextHealthMax;
     }
 
-    healthMaxInput.value = String(nextHealthMax);
+    healthMaxInput.value = String(safeHealthMax);
     healthInput.value = String(nextCurrent);
     if (sheetState.globals) {
       sheetState.globals.health = String(nextCurrent);
-      sheetState.globals.healthMax = String(nextHealthMax);
+      sheetState.globals.healthMax = String(safeHealthMax);
     }
   }
   saveSheetStateToStorage();
 }
 
-// function setupHealthMaxField() {
-//   const healthMaxInput = document.getElementById("char-health-max");
-//   if (!healthMaxInput || healthMaxInput.dataset.ready === "true") return;
-
-//   healthMaxInput.dataset.ready = "true";
-//   healthMaxInput.addEventListener("dblclick", () => {
-//     const currentValue = healthMaxInput.value || String(BASE_HEALTH);
-//     const next = prompt("Set maximum HP", currentValue);
-//     if (next == null) return;
-
-//     const trimmed = next.trim();
-//     if (trimmed === "") {
-//       sheetState.globals[HEALTH_MAX_OVERRIDE_KEY] = "";
-//       updateDerivedCharacterVitals();
-//       clampHealthFields();
-//       saveSheetStateToStorage();
-//       return;
-//     }
-
-//     const parsed = parseInt(trimmed, 10);
-//     if (!Number.isFinite(parsed) || parsed < 0) {
-//       alert("Maximum HP must be 0 or higher.");
-//       return;
-//     }
-
-//     sheetState.globals[HEALTH_MAX_OVERRIDE_KEY] = String(parsed);
-//     updateDerivedCharacterVitals();
-//     clampHealthFields();
-//     saveSheetStateToStorage();
-//   });
-// }
 
 function renderBasicGearTags() {
   const container = document.getElementById("basic-gear-tags");
