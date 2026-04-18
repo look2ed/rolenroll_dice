@@ -661,7 +661,7 @@ function setupSheetRollModal() {
     const success = modal.querySelector("#sheet-roll-success")?.value || pendingSheetRoll.success;
     const penalty = modal.querySelector("#sheet-roll-penalty")?.value || pendingSheetRoll.penalty;
     let specialStr = modal.querySelector("#sheet-roll-special")?.value ?? pendingSheetRoll.specialStr ?? "";
-    
+
     if (!sheetRollIgnoreMentalPenalty) {
       const penaltyFaces = getMentalPenaltyFaces();
 
@@ -674,10 +674,12 @@ function setupSheetRollModal() {
           parsed = [];
         }
 
+        for (let i = 0; i < penaltyFaces; i++) {
         parsed.push({
-          kind: "neg",
-          minusCount: penaltyFaces
+          kind: "custom",
+          faces: ["1", "-", "-", "-", "-", "R"]
         });
+      }
 
         specialStr = JSON.stringify(parsed);
       }
