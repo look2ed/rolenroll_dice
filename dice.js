@@ -1236,9 +1236,13 @@ function getNormalizedHeartState() {
 }
 
 function getCurrentMentalValue() {
+  const hearts = document.querySelectorAll(".mental-heart");
   const mentalMax = getMentalMax();
-  const hearts = getNormalizedHeartState();
-  return hearts.slice(0, mentalMax).filter((h) => !h).length;
+
+  return Array.from(hearts)
+    .slice(0, mentalMax)
+    .filter((heart) => heart.classList.contains("filled"))
+    .length;
 }
 
 function getMentalDamage() {
