@@ -136,6 +136,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // 7) Header field persistence
   setupGlobalFieldPersistence();
 
+  // 🔥 Ensure HP is saved when user edits it
+  const healthInput = document.getElementById("char-health");
+  const healthMaxInput = document.getElementById("char-health-max");
+
+  if (healthInput) {
+    healthInput.addEventListener("change", () => {
+      sheetState.globals.health = healthInput.value;
+      saveSheetStateToStorage();
+    });
+  }
+
+  if (healthMaxInput) {
+    healthMaxInput.addEventListener("change", () => {
+      sheetState.globals.healthMax = healthMaxInput.value;
+      saveSheetStateToStorage();
+    });
+  }
+
   // 8) Initial history render
   renderHistory();
 
@@ -2403,7 +2421,7 @@ function updateDerivedCharacterVitals() {
   const healthInput = document.getElementById("char-health");
   const healthMaxInput = document.getElementById("char-health-max");
 
-  // 🔥 Use stored healthMax as single source of truth
+  // ✅ Use stored max HP ONLY
   const parsedMax = parseInt(sheetState.globals?.healthMax ?? "", 10);
   const safeHealthMax =
     Number.isFinite(parsedMax) && parsedMax > 0
@@ -2411,34 +2429,20 @@ function updateDerivedCharacterVitals() {
       : BASE_HEALTH;
 
   if (healthInput && healthMaxInput) {
-    // 🔥 Use stored current HP instead of recalculating
+    // ✅ Use stored current HP ONLY
     const storedCurrent = parseInt(sheetState.globals?.health ?? "", 10);
 
     let nextCurrent = Number.isFinite(storedCurrent)
       ? storedCurrent
       : safeHealthMax;
 
-    // Clamp current HP so it never exceeds max
     if (nextCurrent > safeHealthMax) {
       nextCurrent = safeHealthMax;
     }
 
-    // Update UI
     healthMaxInput.value = String(safeHealthMax);
     healthInput.value = String(nextCurrent);
-
-    // 🔥 Only update state if missing (prevent overwrite on load)
-    if (sheetState.globals) {
-      if (!sheetState.globals.healthMax) {
-        sheetState.globals.healthMax = String(safeHealthMax);
-      }
-      if (!sheetState.globals.health) {
-        sheetState.globals.health = String(nextCurrent);
-      }
-    }
   }
-
-  // ❌ IMPORTANT: DO NOT auto-save here to avoid overwrite during load
 }
 
 
