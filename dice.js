@@ -1571,8 +1571,8 @@ function applySheetStateToUI() {
     { id: "char-level", key: "level", fallback: "0" },
     { id: "char-exp", key: "exp", fallback: "0" },
     { id: "char-exp-max", key: "expMax", fallback: "0" },
-    { id: "char-health", key: "health", fallback: "0" },
-    { id: "char-health-max", key: "healthMax", fallback: "0" },
+    { id: "char-health", key: "health", fallback: String(BASE_HEALTH) },
+    { id: "char-health-max", key: "healthMax", fallback: String(BASE_HEALTH) },
     { id: "char-defense", key: "defense", fallback: "0" },
     { id: "char-willpower", key: "will", fallback: "0" },
     { id: "profile-char-name", key: "name", fallback: "" },
@@ -4803,7 +4803,10 @@ function loadSheetStateFromStorage() {
       Object.assign(sheetState.skills, fallback.skills);
       Object.assign(sheetState.successChecks, fallback.successChecks);
       sheetState.hearts = fallback.hearts;
-      sheetState.globals = fallback.globals;
+      sheetState.globals = {
+        ...createDefaultSheetPayload("").globals,
+        ...(fallback.globals || {})
+      };
       sheetState.note = fallback.note;
       applyMentalHeartsToUI();
       return;
