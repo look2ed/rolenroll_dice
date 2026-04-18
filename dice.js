@@ -4698,7 +4698,7 @@ function initDotsForRow(row, store, key) {
       updateStatDots(row, nextVal);
       if (isAttributeRow) {
         updateAttributeRemainingDisplay();
-        updateDerivedCharacterVitals();
+
       }
       if (isGeneralAbilityRow) updateGeneralAbilityRemainingDisplay();
       saveSheetStateToStorage();
@@ -4708,7 +4708,6 @@ function initDotsForRow(row, store, key) {
   updateStatDots(row, store[key]);
   if (isAttributeRow) {
     updateAttributeRemainingDisplay();
-    updateDerivedCharacterVitals();
   }
   if (isGeneralAbilityRow) updateGeneralAbilityRemainingDisplay();
 }
