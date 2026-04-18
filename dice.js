@@ -1597,6 +1597,8 @@ function applySheetStateToUI() {
   updateDerivedCharacterVitals();
   renderSheetTabs();
   updateDeleteCharacterButton();
+
+  saveSheetStateToStorage();
 }
 
 function switchToSheet(sheetId) {
@@ -4827,6 +4829,10 @@ function loadSheetStateFromStorage() {
     }
 
     const data = JSON.parse(raw);
+
+    if (!Array.isArray(sheetState.hearts) || sheetState.hearts.length === 0) {
+    sheetState.hearts = getDefaultHearts();
+    }
 
     if (data.attrs && typeof data.attrs === "object") {
       Object.assign(sheetState.attrs, data.attrs);
