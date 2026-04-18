@@ -1595,10 +1595,6 @@ function applySheetStateToUI() {
   updateDerivedCharacterVitals();
   renderSheetTabs();
   updateDeleteCharacterButton();
-
-  if (sheetState.globals?.healthMax) {
-  saveSheetStateToStorage();
-  }
 }
 
 function switchToSheet(sheetId) {
@@ -2407,36 +2403,42 @@ function updateDerivedCharacterVitals() {
   const healthInput = document.getElementById("char-health");
   const healthMaxInput = document.getElementById("char-health-max");
 
+  // 🔥 Use stored healthMax as single source of truth
   const parsedMax = parseInt(sheetState.globals?.healthMax ?? "", 10);
-
   const safeHealthMax =
     Number.isFinite(parsedMax) && parsedMax > 0
       ? parsedMax
       : BASE_HEALTH;
 
   if (healthInput && healthMaxInput) {
-    const previousMax = parseInt(healthMaxInput.value || String(nextHealthMax), 10);
-    const previousCurrent = parseInt(healthInput.value || String(previousMax), 10);
-    const safePreviousMax = Number.isFinite(previousMax) && previousMax >= 0 ? previousMax : nextHealthMax;
-    const safePreviousCurrent = Number.isFinite(previousCurrent) && previousCurrent >= 0
-      ? previousCurrent
-      : safePreviousMax;
-    const missingHealth = Math.max(0, safePreviousMax - safePreviousCurrent);
-    let nextCurrent = safePreviousCurrent;
+    // 🔥 Use stored current HP instead of recalculating
+    const storedCurrent = parseInt(sheetState.globals?.health ?? "", 10);
 
-    // Only clamp if current > max
-    if (nextCurrent > nextHealthMax) {
-      nextCurrent = nextHealthMax;
+    let nextCurrent = Number.isFinite(storedCurrent)
+      ? storedCurrent
+      : safeHealthMax;
+
+    // Clamp current HP so it never exceeds max
+    if (nextCurrent > safeHealthMax) {
+      nextCurrent = safeHealthMax;
     }
 
+    // Update UI
     healthMaxInput.value = String(safeHealthMax);
     healthInput.value = String(nextCurrent);
+
+    // 🔥 Only update state if missing (prevent overwrite on load)
     if (sheetState.globals) {
-      sheetState.globals.health = String(nextCurrent);
-      sheetState.globals.healthMax = String(safeHealthMax);
+      if (!sheetState.globals.healthMax) {
+        sheetState.globals.healthMax = String(safeHealthMax);
+      }
+      if (!sheetState.globals.health) {
+        sheetState.globals.health = String(nextCurrent);
+      }
     }
   }
-  saveSheetStateToStorage();
+
+  // ❌ IMPORTANT: DO NOT auto-save here to avoid overwrite during load
 }
 
 
