@@ -4830,9 +4830,6 @@ function loadSheetStateFromStorage() {
 
     const data = JSON.parse(raw);
 
-    if (!Array.isArray(sheetState.hearts) || sheetState.hearts.length === 0) {
-    sheetState.hearts = getDefaultHearts();
-    }
 
     if (data.attrs && typeof data.attrs === "object") {
       Object.assign(sheetState.attrs, data.attrs);
@@ -4844,6 +4841,10 @@ function loadSheetStateFromStorage() {
       Object.assign(sheetState.successChecks, data.successChecks);
     }
     sheetState.hearts = Array.isArray(data.hearts) ? data.hearts : getDefaultHearts();
+    // 🔥 Ensure hearts always initialized AFTER loading data
+    if (!Array.isArray(sheetState.hearts) || sheetState.hearts.length === 0) {
+      sheetState.hearts = getDefaultHearts();
+    }
     sheetState.globals = {
       ...createDefaultSheetPayload("").globals,
       ...(data.globals || {})
