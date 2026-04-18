@@ -58,7 +58,9 @@ const sheetState = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("DEBUG: DOMContentLoaded fired");
   initSheetManager();
+  console.log("DEBUG: After initSheetManager, currentSheetId:", currentSheetId);
   setupV5Layout();
   setupCharacterInfoTabs();
   setupFloatingTooltips();
@@ -67,8 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupHeaderMessageControls();
 
   // 1) Load saved sheet state FIRST (so attrs/skills are ready)
+  console.log("DEBUG: About to call loadSheetStateFromStorage");
   loadSheetStateFromStorage();
-  
 
   // 2) Form submit
   const form = document.getElementById("dice-form");
@@ -136,6 +138,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 7) Header field persistence
   setupGlobalFieldPersistence();
+
+  // 8) Apply loaded state to UI after everything is set up
+  console.log("DEBUG: About to call applySheetStateToUI after UI setup");
+  setTimeout(() => {
+    console.log("DEBUG: Calling applySheetStateToUI with delay");
+    applySheetStateToUI();
+  }, 100);
 
   // 🔥 Ensure HP is saved when user edits it
   const healthInput = document.getElementById("char-health");
@@ -1520,18 +1529,24 @@ function migrateLegacySheetIfNeeded() {
 }
 
 function initSheetManager() {
+  console.log("DEBUG: initSheetManager started");
   sheetDirectory = migrateLegacySheetIfNeeded();
+  console.log("DEBUG: After migrateLegacySheetIfNeeded, sheetDirectory:", sheetDirectory);
   if (!sheetDirectory.length) {
+    console.log("DEBUG: No sheets found, creating new sheet");
     createNewSheet("");
   }
   sheetDirectory = loadSheetDirectoryFromStorage();
+  console.log("DEBUG: After loadSheetDirectoryFromStorage, sheetDirectory:", sheetDirectory);
 
   const tabs = document.getElementById("sheet-tabs");
   const newSheetBtn = document.getElementById("new-sheet-btn");
   const savedActiveSheetId = sessionStorage.getItem(ACTIVE_SHEET_KEY);
+  console.log("DEBUG: savedActiveSheetId from sessionStorage:", savedActiveSheetId);
   currentSheetId = sheetDirectory.some((sheet) => sheet.id === savedActiveSheetId)
     ? savedActiveSheetId
     : sheetDirectory[0]?.id || "";
+  console.log("DEBUG: Final currentSheetId:", currentSheetId);
 
   if (currentSheetId) {
     sessionStorage.setItem(ACTIVE_SHEET_KEY, currentSheetId);
@@ -1567,6 +1582,10 @@ function resetSheetState() {
 }
 
 function applySheetStateToUI() {
+  console.log("DEBUG: applySheetStateToUI called");
+  console.log("DEBUG: sheetState before applying:", sheetState);
+  
+  // Apply global fields after DOM is ready
   const globalMap = [
     { id: "char-name", key: "name", fallback: "" },
     { id: "char-level", key: "level", fallback: "0" },
@@ -1586,11 +1605,17 @@ function applySheetStateToUI() {
 
   globalMap.forEach(({ id, key, fallback }) => {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.value = sheetState.globals?.[key] != null ? sheetState.globals[key] : fallback;
+    console.log(`DEBUG: Element ${id} found:`, !!el);
+    if (!el) {
+      console.log(`DEBUG: Element ${id} not found in DOM`);
+      return;
+    }
+    const value = sheetState.globals?.[key] != null ? sheetState.globals[key] : fallback;
+    console.log(`DEBUG: Setting ${id} to value:`, value, "from sheetState.globals.", key, ":", sheetState.globals?.[key]);
+    el.value = value;
   });
+  
   clampExpFields();
-  // clampHealthFields();
 
   applyMentalHeartsToUI();
 
@@ -4728,10 +4753,13 @@ function updateStatDots(row, value) {
 
 function saveSheetStateToStorage() {
   try {
-    if (!currentSheetId) return;
+    console.log("DEBUG: saveSheetStateToStorage called, currentSheetId:", currentSheetId);
+    if (!currentSheetId) {
+      console.log("DEBUG: No currentSheetId, skipping save");
+      return;
+    }
     clampExpFields();
     updateDerivedDefenseFromGear();
-    clampHealthFields();
 
     const hearts = Array.from(document.querySelectorAll(".mental-heart")).map(
       (btn) => !btn.classList.contains("off") // true if ON, false if OFF
@@ -4784,7 +4812,11 @@ function saveSheetStateToStorage() {
       extraSkills: sheetState.extraSkills || []
     };
 
-    localStorage.setItem(getSheetStorageKey(currentSheetId), JSON.stringify(payload));
+    const storageKey = getSheetStorageKey(currentSheetId);
+    console.log("DEBUG: Saving to localStorage with key:", storageKey);
+    console.log("DEBUG: Payload being saved:", payload);
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+    console.log("DEBUG: Save completed successfully");
   } catch (e) {
     console.warn("Could not save sheet state:", e);
   }
@@ -4792,11 +4824,19 @@ function saveSheetStateToStorage() {
 
 function loadSheetStateFromStorage() {
   try {
+    console.log("DEBUG: loadSheetStateFromStorage called, currentSheetId:", currentSheetId);
+    console.log("DEBUG: loadSheetStateFromStorage starting execution");
     resetSheetState();
 
-    if (!currentSheetId) return;
+    if (!currentSheetId) {
+      console.log("DEBUG: No currentSheetId, skipping load");
+      return;
+    }
 
-    const raw = localStorage.getItem(getSheetStorageKey(currentSheetId));
+    const storageKey = getSheetStorageKey(currentSheetId);
+    console.log("DEBUG: Loading from localStorage with key:", storageKey);
+    const raw = localStorage.getItem(storageKey);
+    console.log("DEBUG: Raw data from localStorage:", raw);
     if (!raw) {
       const fallback = createDefaultSheetPayload("");
       localStorage.setItem(getSheetStorageKey(currentSheetId), JSON.stringify(fallback));
@@ -4814,7 +4854,8 @@ function loadSheetStateFromStorage() {
     }
 
     const data = JSON.parse(raw);
-
+    console.log("DEBUG: Parsed data from localStorage:", data);
+    console.log("DEBUG: data.globals:", data.globals);
 
     if (data.attrs && typeof data.attrs === "object") {
       Object.assign(sheetState.attrs, data.attrs);
@@ -4825,7 +4866,7 @@ function loadSheetStateFromStorage() {
     if (data.successChecks && typeof data.successChecks === "object") {
       Object.assign(sheetState.successChecks, data.successChecks);
     }
-    // 🔥 Load hearts safely (preserve saved data)
+    // Load hearts safely (preserve saved data)
     if (Array.isArray(data.hearts) && data.hearts.length > 0) {
       sheetState.hearts = data.hearts;
     } else {
@@ -4835,7 +4876,8 @@ function loadSheetStateFromStorage() {
       ...createDefaultSheetPayload("").globals,
       ...(data.globals || {})
     };
-    // 🔥 Ensure HP is always preserved after load
+    console.log("DEBUG: Final sheetState.globals after load:", sheetState.globals);
+    // Ensure HP is always preserved after load
     if (!sheetState.globals.health || sheetState.globals.health === "") {
       sheetState.globals.health =
         sheetState.globals.healthMax || String(BASE_HEALTH);
@@ -4869,12 +4911,7 @@ function loadSheetStateFromStorage() {
       { id: "char-background", key: "background" }
     ];
 
-    globalMap.forEach(({ id, key }) => {
-      const el = document.getElementById(id);
-      if (el && sheetState.globals[key] != null) {
-        el.value = sheetState.globals[key];
-      }
-    });
+    // Global fields will be applied in applySheetStateToUI() after DOM is ready
 
     applyMentalHeartsToUI();
   } catch (e) {
@@ -4916,7 +4953,6 @@ function setupGlobalFieldPersistence() {
         sheetState.globals.expMax = document.getElementById("char-exp-max")?.value ?? "0";
       }
     if (key === "health" || key === "healthMax") {
-      clampHealthFields();
       sheetState.globals.health = document.getElementById("char-health")?.value ?? "0";
       sheetState.globals.healthMax = document.getElementById("char-health-max")?.value ?? "0";
     }
