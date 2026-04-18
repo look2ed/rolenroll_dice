@@ -4465,12 +4465,6 @@ function setupMentalHearts() {
     }
 
     btn.addEventListener("click", () => {
-      const heartElements = document.querySelectorAll(".mental-heart");
-      heartElements.forEach((heart, index) => {
-        sheetState.hearts[index] = heart.classList.contains("filled");
-      });
-
-      saveSheetStateToStorage();
       if (btn.classList.contains("on")) {
         btn.classList.remove("on");
         btn.classList.add("off");
@@ -4478,6 +4472,12 @@ function setupMentalHearts() {
         btn.classList.remove("off");
         btn.classList.add("on");
       }
+
+      const heartElements = document.querySelectorAll(".mental-heart");
+      heartElements.forEach((heart, index) => {
+        // ✅ TRUE = has mental (on), FALSE = lost (off)
+        sheetState.hearts[index] = !heart.classList.contains("off");
+      });
       btn.setAttribute("aria-pressed", btn.classList.contains("on").toString());
       updateMentalSummary();
       saveSheetStateToStorage();
