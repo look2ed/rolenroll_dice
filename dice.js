@@ -116,6 +116,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // default language = TH
   setLang("th");
 
+  function addDoubleTapListener(element, callback, delay = 300) {
+  let lastTap = 0;
+
+  element.addEventListener("touchend", (event) => {
+    const now = Date.now();
+    const timeSince = now - lastTap;
+
+    if (timeSince > 0 && timeSince < delay) {
+      event.preventDefault(); // prevent zoom
+      callback(event);
+    }
+
+    lastTap = now;
+  });
+}
+
   // 5) History panel toggle
   const historyBtn = document.getElementById("history-toggle");
   const historyPanel = document.getElementById("history-panel");
@@ -1741,8 +1757,22 @@ function setupEquipment() {
       if (item) rollEquipment(item);
     });
 
+    // ===== Desktop: dblclick =====
     basicGearTags.addEventListener("dblclick", (event) => {
       if (event.target.closest("button[data-basic-equipment-roll-id]")) return;
+
+      const tag = event.target.closest("[data-basic-equipment-id]");
+      if (!tag) return;
+
+      const item = sheetState.equipment.find((entry) => entry.id === tag.dataset.basicEquipmentId);
+      if (item) openEquipmentModal(item);
+    });
+
+
+    // ===== Mobile: double-tap fallback =====
+    addDoubleTapListener(basicGearTags, (event) => {
+      if (event.target.closest("button[data-basic-equipment-roll-id]")) return;
+
       const tag = event.target.closest("[data-basic-equipment-id]");
       if (!tag) return;
 
