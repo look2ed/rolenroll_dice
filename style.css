@@ -535,8 +535,414 @@ body.dice-drawer-open .dice-panel {
 .character-info-header h2 {
   margin-bottom: 0.75rem;
   color: var(--brand-dark);
-  font-size: 1.15rem;
+}
+
+/* Dice Tabs */
+.dice-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid rgba(35, 84, 90, 0.14);
+  padding-bottom: 0;
+}
+
+.dice-tab {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.dice-tab:hover {
+  background: rgba(35, 84, 90, 0.06);
+  color: var(--text);
+}
+
+.dice-tab:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+.dice-tab.active {
+  background: rgba(35, 84, 90, 0.08);
+  color: var(--brand-dark);
+  border-bottom-color: var(--brand);
+  font-weight: 600;
+}
+
+.dice-tab[aria-selected="true"] {
+  background: rgba(35, 84, 90, 0.08);
+}
+
+/* Tab Content */
+.dice-tab-content {
+  display: none;
+}
+
+.dice-tab-content.active {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Standard Dice Result Styling */
+.standard-dice-result,
+.coin-flip-result {
+  background: rgba(35, 84, 90, 0.04);
+  border: 1px solid rgba(35, 84, 90, 0.12);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+
+.standard-dice-result p,
+.coin-flip-result p {
+  margin: 0.25rem 0;
+}
+
+.standard-dice-result p:last-child,
+.coin-flip-result p:last-child {
+  margin-bottom: 0;
+}
+
+.standard-dice-result strong,
+.coin-flip-result strong {
+  color: var(--brand-dark);
+}
+
+/* 3D Dice Container */
+.dice-3d-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(35, 84, 90, 0.02);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(35, 84, 90, 0.08);
+}
+
+.dice-3d-stage {
+  display: block;
+  min-height: 120px;
+  perspective: 1000px;
+  padding: 0;
+}
+
+#three-dice-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 32vh, 360px);
+}
+
+.dice-credit {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(35, 84, 90, 0.6);
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-top: 1px solid rgba(35, 84, 90, 0.1);
+}
+
+/* 3D Coin Container */
+.coin-3d-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(35, 84, 90, 0.02);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(35, 84, 90, 0.08);
+}
+
+.coin-3d-stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  min-height: 120px;
+  perspective: 1000px;
+  padding: 1rem;
+}
+
+/* 3D Coin Base Styles */
+.coin-3d {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.coin-3d.flipping {
+  animation: flip 600ms ease-out;
+}
+
+.coin-3d .face {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  backface-visibility: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.coin-3d .heads {
+  background: linear-gradient(145deg, #ffd700, #ffed4e);
+  border: 3px solid #d4af37;
+  color: #8b7355;
+  transform: rotateY(0deg) translateZ(4px);
+}
+
+.coin-3d .tails {
+  background: linear-gradient(145deg, #c0c0c0, #e8e8e8);
+  border: 3px solid #a0a0a0;
+  color: #555;
+  transform: rotateY(180deg) translateZ(4px);
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(1800deg);
+  }
+}
+
+/* Show coin faces */
+.coin-3d.show-heads { transform: rotateY(0deg); }
+.coin-3d.show-tails { transform: rotateY(180deg); }
+
+/* 3D Dice Base Styles */
+.dice-3d {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  transition: none;
+}
+
+.dice-3d.rolling {
+  animation: roll 2s ease-out;
+}
+
+.dice-3d.in-tray {
+  box-shadow:
+    0 10px 20px rgba(0,0,0,0.3),
+    0 6px 6px rgba(0,0,0,0.2);
+}
+
+.dice-3d.d6 {
+  transform-style: preserve-3d;
+}
+
+.dice-3d.d4,
+.dice-3d.d20 {
+  transform-style: preserve-3d;
+}
+
+/* D6 Cube Faces */
+.dice-3d.d6 .face {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border: 2px solid #333;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dice-3d.d6 .face.front { transform: rotateY(0deg) translateZ(30px); }
+.dice-3d.d6 .face.back { transform: rotateY(180deg) translateZ(30px); }
+.dice-3d.d6 .face.right { transform: rotateY(90deg) translateZ(30px); }
+.dice-3d.d6 .face.left { transform: rotateY(-90deg) translateZ(30px); }
+.dice-3d.d6 .face.top { transform: rotateX(90deg) translateZ(30px); }
+.dice-3d.d6 .face.bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+/* D6 Number faces - fixed correlation */
+.dice-3d.d6 .face.front::after { content: "1"; }
+.dice-3d.d6 .face.back::after { content: "6"; }
+.dice-3d.d6 .face.right::after { content: "4"; }
+.dice-3d.d6 .face.left::after { content: "3"; }
+.dice-3d.d6 .face.top::after { content: "2"; }
+.dice-3d.d6 .face.bottom::after { content: "5"; }
+
+.dice-3d.d4,
+.dice-3d.d20 {
+  width: 72px;
+  height: 72px;
+}
+
+.dice-3d.d4 .face,
+.dice-3d.d20 .face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fffdf7;
+  font-size: 26px;
   font-weight: 900;
+  text-shadow: 0 1px 2px rgba(23, 23, 23, 0.42);
+  backface-visibility: hidden;
+  box-shadow:
+    inset 0 2px 7px rgba(255, 255, 255, 0.2),
+    inset 0 -8px 14px rgba(23, 23, 23, 0.22);
+}
+
+.dice-3d.d4 .face {
+  clip-path: polygon(50% 4%, 8% 94%, 92% 94%);
+  background: linear-gradient(145deg, #d5a353, #8a6127);
+  border: 2px solid rgba(73, 47, 17, 0.72);
+}
+
+.dice-3d.d4 .face.result { transform: rotateX(-14deg) translateZ(24px); }
+.dice-3d.d4 .face.facet-a { transform: rotateY(120deg) rotateX(24deg) translateZ(20px); filter: brightness(0.9); }
+.dice-3d.d4 .face.facet-b { transform: rotateY(-120deg) rotateX(24deg) translateZ(20px); filter: brightness(0.78); }
+.dice-3d.d4 .face.facet-c { transform: rotateX(106deg) translateZ(17px); filter: brightness(0.68); }
+.dice-3d.d4 .face.facet-d,
+.dice-3d.d4 .face.facet-e,
+.dice-3d.d4 .face.facet-f { display: none; }
+
+.dice-3d.d20 .face {
+  clip-path: polygon(50% 3%, 4% 84%, 96% 84%);
+  background: linear-gradient(145deg, #4c83bd, #1f4d7d);
+  border: 2px solid rgba(19, 53, 86, 0.78);
+}
+
+.dice-3d.d20 .face.result { transform: rotateX(-8deg) translateZ(30px); }
+.dice-3d.d20 .face.facet-a { transform: rotateY(72deg) rotateX(18deg) translateZ(24px); filter: brightness(0.92); }
+.dice-3d.d20 .face.facet-b { transform: rotateY(-72deg) rotateX(18deg) translateZ(24px); filter: brightness(0.78); }
+.dice-3d.d20 .face.facet-c { transform: rotateY(144deg) rotateX(-10deg) translateZ(18px); filter: brightness(0.7); }
+.dice-3d.d20 .face.facet-d { transform: rotateY(-144deg) rotateX(-10deg) translateZ(18px); filter: brightness(0.62); }
+.dice-3d.d20 .face.facet-e { transform: rotateX(72deg) translateZ(18px); filter: brightness(1.08); }
+.dice-3d.d20 .face.facet-f { transform: rotateX(-72deg) translateZ(18px); filter: brightness(0.68); }
+
+.dice-3d.d4.show-1,
+.dice-3d.d20.show-1 { transform: rotateX(0deg) rotateY(0deg); }
+.dice-3d.d20.show-2 { transform: rotateX(0deg) rotateY(60deg); }
+.dice-3d.d20.show-3 { transform: rotateX(0deg) rotateY(120deg); }
+.dice-3d.d20.show-4 { transform: rotateX(0deg) rotateY(180deg); }
+.dice-3d.d20.show-5 { transform: rotateX(0deg) rotateY(240deg); }
+.dice-3d.d20.show-6 { transform: rotateX(0deg) rotateY(300deg); }
+
+/* Dynamic D20 face value display */
+.dice-3d.d20 .face[data-value]::after {
+  content: attr(data-value);
+}
+
+/* Roll Animation */
+@keyframes roll {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  25% {
+    transform: rotateX(720deg) rotateY(360deg) rotateZ(180deg);
+  }
+  50% {
+    transform: rotateX(1080deg) rotateY(720deg) rotateZ(360deg);
+  }
+  75% {
+    transform: rotateX(1440deg) rotateY(1080deg) rotateZ(540deg);
+  }
+  100% {
+    transform: rotateX(var(--final-x)) rotateY(var(--final-y)) rotateZ(var(--final-z));
+  }
+}
+
+/* Show faces for specific values - fixed correlation */
+.dice-3d.d6.show-1 { transform: rotateX(0deg) rotateY(0deg); }
+.dice-3d.d6.show-2 { transform: rotateX(-90deg) rotateY(0deg); }
+.dice-3d.d6.show-3 { transform: rotateX(0deg) rotateY(90deg); }
+.dice-3d.d6.show-4 { transform: rotateX(0deg) rotateY(-90deg); }
+.dice-3d.d6.show-5 { transform: rotateX(90deg) rotateY(0deg); }
+.dice-3d.d6.show-6 { transform: rotateX(0deg) rotateY(180deg); }
+
+/* D20 Show classes - match triangular face positions */
+.dice-3d.d20.show-1  { transform: rotateY(0deg) rotateX(0deg); }
+.dice-3d.d20.show-2  { transform: rotateY(-72deg) rotateX(0deg); }
+.dice-3d.d20.show-3  { transform: rotateY(-144deg) rotateX(0deg); }
+.dice-3d.d20.show-4  { transform: rotateY(-216deg) rotateX(0deg); }
+.dice-3d.d20.show-5  { transform: rotateY(-288deg) rotateX(0deg); }
+.dice-3d.d20.show-6  { transform: rotateX(-60deg) rotateY(0deg); }
+.dice-3d.d20.show-7  { transform: rotateX(-60deg) rotateY(-72deg); }
+.dice-3d.d20.show-8  { transform: rotateX(-60deg) rotateY(-144deg); }
+.dice-3d.d20.show-9  { transform: rotateX(-60deg) rotateY(-216deg); }
+.dice-3d.d20.show-10 { transform: rotateX(-60deg) rotateY(-288deg); }
+.dice-3d.d20.show-11 { transform: rotateX(60deg) rotateY(0deg); }
+.dice-3d.d20.show-12 { transform: rotateX(60deg) rotateY(-72deg); }
+.dice-3d.d20.show-13 { transform: rotateX(60deg) rotateY(-144deg); }
+.dice-3d.d20.show-14 { transform: rotateX(60deg) rotateY(-216deg); }
+.dice-3d.d20.show-15 { transform: rotateX(60deg) rotateY(-288deg); }
+.dice-3d.d20.show-16 { transform: rotateX(-180deg) rotateY(0deg); }
+.dice-3d.d20.show-17 { transform: rotateX(-180deg) rotateY(-72deg); }
+.dice-3d.d20.show-18 { transform: rotateX(-180deg) rotateY(-144deg); }
+.dice-3d.d20.show-19 { transform: rotateX(-180deg) rotateY(-216deg); }
+.dice-3d.d20.show-20 { transform: rotateX(-180deg) rotateY(-288deg); }
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .dice-3d {
+    width: 50px;
+    height: 50px;
+  }
+
+  .dice-3d.d4,
+  .dice-3d.d20 {
+    width: 58px;
+    height: 58px;
+  }
+
+  .dice-3d.d6 .face {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .dice-3d.d4 .face,
+  .dice-3d.d20 .face {
+    font-size: 22px;
+  }
+
+  .dice-3d.d6 .face.front { transform: rotateY(0deg) translateZ(25px); }
+  .dice-3d.d6 .face.back { transform: rotateY(180deg) translateZ(25px); }
+  .dice-3d.d6 .face.right { transform: rotateY(90deg) translateZ(25px); }
+  .dice-3d.d6 .face.left { transform: rotateY(-90deg) translateZ(25px); }
+  .dice-3d.d6 .face.top { transform: rotateX(90deg) translateZ(25px); }
+  .dice-3d.d6 .face.bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+  .dice-3d.d20 .face.front { transform: rotateY(0deg) translateZ(25px); }
+  .dice-3d.d20 .face.back { transform: rotateY(180deg) translateZ(25px); }
+  .dice-3d.d20 .face.right { transform: rotateY(90deg) translateZ(25px); }
+  .dice-3d.d20 .face.left { transform: rotateY(-90deg) translateZ(25px); }
+  .dice-3d.d20 .face.top { transform: rotateX(90deg) translateZ(25px); }
+  .dice-3d.d20 .face.bottom { transform: rotateX(-90deg) translateZ(25px); }
 }
 
 #dice-form {

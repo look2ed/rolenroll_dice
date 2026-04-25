@@ -38,6 +38,17 @@ const EXTRA_SKILL_STARTING_POINTS = 6;
 const EXTRA_SKILL_MAX_POINTS_KEY = "extraSkillMaxPoints";
 const DEFAULT_DEVELOPER_MESSAGE = "Welcome to Role & Roll Unofficial Interactive Character Sheet.\n\nEdit developer-message.txt to announce major changes, updates, or reminders to players.";
 const CONTACT_ENDPOINT = "https://formspree.io/f/xdayayrq";
+const STANDARD_DICE_SIDES = {
+  d4: 4,
+  d6: 6,
+  d20: 20,
+};
+
+function getStandardDiceSides(diceType) {
+  const normalizedDiceType = String(diceType || "").trim().toLowerCase();
+  return STANDARD_DICE_SIDES[normalizedDiceType] || STANDARD_DICE_SIDES.d6;
+}
+
 let currentSheetId = "";
 let sheetDirectory = [];
 
@@ -75,6 +86,63 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2) Form submit
   const form = document.getElementById("dice-form");
   if (form) form.addEventListener("submit", onSubmit);
+
+  // 2.1) Tab switching functionality
+  const tabButtons = document.querySelectorAll(".dice-tab");
+  const tabContents = document.querySelectorAll(".dice-tab-content");
+
+  function switchTab(tabName) {
+    // Update button states
+    tabButtons.forEach(btn => {
+      if (btn.getAttribute("data-tab") === tabName) {
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+      } else {
+        btn.classList.remove("active");
+        btn.setAttribute("aria-selected", "false");
+      }
+    });
+
+    // Update content visibility
+    tabContents.forEach(content => {
+      if (content.id === `${tabName}-content`) {
+        content.classList.add("active");
+      } else {
+        content.classList.remove("active");
+      }
+    });
+
+    // Hide 3D dice container when switching away from standard dice
+    const dice3DContainer = document.getElementById("dice-3d-container");
+    if (dice3DContainer && tabName !== "standard-dice") {
+      dice3DContainer.classList.add("hidden");
+    }
+
+    // Hide 3D coin container when switching away from coin flip tab
+    const coin3DContainer = document.getElementById("coin-3d-container");
+    if (coin3DContainer && tabName !== "coin-flip") {
+      coin3DContainer.classList.add("hidden");
+    }
+  }
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tabName = btn.getAttribute("data-tab");
+      switchTab(tabName);
+    });
+  });
+
+  // 2.2) Standard dice form submit
+  const standardDiceForm = document.getElementById("standard-dice-form");
+  if (standardDiceForm) {
+    standardDiceForm.addEventListener("submit", onStandardDiceSubmit);
+  }
+
+  // 2.3) Coin flip form submit
+  const coinFlipForm = document.getElementById("coin-flip-form");
+  if (coinFlipForm) {
+    coinFlipForm.addEventListener("submit", onCoinFlipSubmit);
+  }
 
   // 3) Help panel toggle
   const helpBtn = document.getElementById("help-toggle");
@@ -1584,7 +1652,7 @@ function resetSheetState() {
 function applySheetStateToUI() {
   console.log("DEBUG: applySheetStateToUI called");
   console.log("DEBUG: sheetState before applying:", sheetState);
-  
+
   // Apply global fields after DOM is ready
   const globalMap = [
     { id: "char-name", key: "name", fallback: "" },
@@ -1614,7 +1682,7 @@ function applySheetStateToUI() {
     console.log(`DEBUG: Setting ${id} to value:`, value, "from sheetState.globals.", key, ":", sheetState.globals?.[key]);
     el.value = value;
   });
-  
+
   clampExpFields();
 
   applyMentalHeartsToUI();
@@ -2521,8 +2589,8 @@ function renderBasicGearTags() {
       <span>${escapeHtml(item.name || "Equipment")}</span>
       <span class="basic-status-turns">${escapeHtml(slotLabel)}</span>
 
-      ${item.slot === "wearing" && item.stats?.def 
-        ? `<span class="basic-status-turns">DEF ${escapeHtml(item.def || 0)}</span>` 
+      ${item.slot === "wearing" && item.stats?.def
+        ? `<span class="basic-status-turns">DEF ${escapeHtml(item.def || 0)}</span>`
         : ""}
 
       ${rollButton}
@@ -4257,6 +4325,8 @@ function renderHistory() {
 // ---------- core roll executor (used by form + stats) ----------
 
 function performRoll({ total, specialStr, success = 0, penalty = 0, equipmentDmg = null, ignoreMentalPenalty = false }) {
+  ensureRolenrollResultModalBody();
+
   const totalNum = parseInt(total ?? 0, 10);
   if (isNaN(totalNum) || totalNum <= 0) {
     alert("Please enter a valid total number of dice (at least 1).");
@@ -4421,6 +4491,665 @@ function onSubmit(e) {
     success,
     penalty,
   });
+}
+
+function onStandardDiceSubmit(e) {
+  e.preventDefault();
+
+  const diceType = document.getElementById("dice-type").value.trim().toLowerCase();
+  const diceCount = parseInt(document.getElementById("dice-count").value);
+  const modifier = parseInt(document.getElementById("dice-modifier").value) || 0;
+  const rolls = [];
+  let total = modifier;
+
+  // Create 3D dice and start rolling animation
+  create3DDice(diceType, diceCount, (rollResults) => {
+    rollResults.forEach(roll => {
+      rolls.push(roll);
+      total += roll;
+    });
+
+    // Calculate final total explicitly
+    const calculatedTotal = rolls.reduce((sum, roll) => sum + roll, 0) + modifier;
+
+    // Add to roll history
+    const rollResult = {
+      type: "standard-dice",
+      finalTotal: calculatedTotal,
+      totalDice: diceCount,
+      baseScore: calculatedTotal - modifier,
+      special: diceType,
+      rerollCount: 0,
+      rerollPoints: 0,
+      plusTokens: 0,
+      minusTokens: 0,
+      success: 0,
+      penalty: 0,
+      time: Date.now(),
+      displayText: `${diceCount}${diceType}${modifier >= 0 ? '+' : ''}${modifier} = [${rolls.join(', ')}] ${modifier >= 0 ? '+' : ''}${modifier} = ${calculatedTotal}`,
+      rolls,
+      diceType,
+      diceCount,
+      modifier
+    };
+
+    rollHistory.unshift(rollResult);
+    if (rollHistory.length > 50) rollHistory.length = 50;
+
+    renderHistory();
+
+    // Show result in the existing result modal
+    showStandardDiceResult(rollResult);
+  });
+}
+
+// Three.js 3D Dice Setup
+let threeScene, threeCamera, threeRenderer, threeDice = [];
+let threeAnimationFrame = null;
+let threeInitialized = false;
+
+function initThreeJS() {
+  const stage = document.getElementById("dice-3d-stage");
+  if (!stage) return;
+
+  if (threeInitialized && threeRenderer) {
+    resizeThreeDiceRenderer();
+    return;
+  }
+
+  stage.innerHTML = "";
+  const canvas = document.createElement("canvas");
+  canvas.id = "three-dice-canvas";
+  stage.appendChild(canvas);
+
+  threeScene = new THREE.Scene();
+  threeScene.background = new THREE.Color(0xf8f6ef);
+
+  threeCamera = new THREE.PerspectiveCamera(38, 1, 0.1, 1000);
+  threeCamera.position.set(0, 3.2, 7.8);
+  threeCamera.lookAt(0, 0, 0);
+
+  threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  threeRenderer.setPixelRatio(window.devicePixelRatio);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.62);
+  threeScene.add(ambientLight);
+
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1);
+  keyLight.position.set(4, 7, 5);
+  threeScene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0xbad7ff, 0.46);
+  fillLight.position.set(-5, 3, 3);
+  threeScene.add(fillLight);
+
+  threeInitialized = true;
+  resizeThreeDiceRenderer();
+  window.addEventListener("resize", resizeThreeDiceRenderer);
+
+  animateThreeJS();
+}
+
+function resizeThreeDiceRenderer() {
+  const stage = document.getElementById("dice-3d-stage");
+  if (!stage || !threeRenderer || !threeCamera) return;
+
+  const width = Math.max(stage.clientWidth, 320);
+  const height = Math.max(stage.clientHeight, 220);
+  threeCamera.aspect = width / height;
+  threeCamera.updateProjectionMatrix();
+  threeRenderer.setSize(width, height, false);
+}
+
+function animateThreeJS() {
+  threeAnimationFrame = requestAnimationFrame(animateThreeJS);
+
+  threeDice.forEach(({ mesh, label, spin }) => {
+    mesh.rotation.x += spin.x;
+    mesh.rotation.y += spin.y;
+    mesh.rotation.z += spin.z;
+  });
+
+  if (threeRenderer && threeScene && threeCamera) {
+    threeRenderer.render(threeScene, threeCamera);
+  }
+}
+
+function create3DDice(diceType, count, callback) {
+  if (!window.THREE) {
+    create3DDiceCSS(diceType, count, callback);
+    return;
+  }
+
+  create3DDiceThree(diceType, count, callback);
+}
+
+function create3DDiceThree(diceType, count, callback) {
+  const container = document.getElementById("dice-3d-container");
+  if (!container) return;
+
+  container.classList.remove("hidden");
+  initThreeJS();
+
+  threeDice.forEach(({ group }) => threeScene.remove(group));
+  threeDice = [];
+
+  const results = [];
+  const maxRoll = getStandardDiceSides(diceType);
+  const columns = Math.min(count, 5);
+  const rows = Math.ceil(count / columns);
+  const spacing = 1.85;
+  const startX = -((columns - 1) * spacing) / 2;
+  const rowGap = 1.75;
+  const startY = ((rows - 1) * rowGap) / 2;
+
+  for (let i = 0; i < count; i++) {
+    const result = Math.floor(Math.random() * maxRoll) + 1;
+    results.push(result);
+
+    const group = new THREE.Group();
+    const column = i % columns;
+    const row = Math.floor(i / columns);
+    group.position.set(startX + column * spacing, startY - row * rowGap, 0);
+
+    const mesh = createThreeDieMesh(diceType);
+    group.add(mesh);
+    threeScene.add(group);
+
+    threeDice.push({
+      group,
+      mesh,
+      spin: {
+        x: 0.11 + Math.random() * 0.04,
+        y: 0.13 + Math.random() * 0.04,
+        z: 0.07 + Math.random() * 0.03,
+      },
+    });
+  }
+
+  setTimeout(() => {
+    threeDice.forEach(({ mesh, spin }, index) => {
+      spin.x = 0;
+      spin.y = 0;
+      spin.z = 0;
+      if (diceType === "d6") {
+        setD6ResultRotation(mesh, results[index]);
+      } else {
+        setPolyhedralResultRotation(mesh, diceType, results[index]);
+      }
+    });
+    callback(results);
+  }, 900 + count * 45);
+}
+
+function createThreeDieMesh(diceType) {
+  const geometry = getThreeDiceGeometry(diceType);
+  const material = diceType === "d6"
+    ? createD6FaceMaterials()
+    : new THREE.MeshStandardMaterial({
+      color: getThreeDiceColor(diceType),
+      roughness: 0.42,
+      metalness: 0.08,
+      flatShading: true,
+    });
+  const mesh = new THREE.Mesh(geometry, material);
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geometry),
+    new THREE.LineBasicMaterial({ color: 0x173a3f, transparent: true, opacity: 0.42 })
+  );
+  mesh.add(edges);
+
+  if (diceType !== "d6") {
+    addPolyhedralFaceLabels(mesh, diceType, geometry);
+  }
+
+  return mesh;
+}
+
+function createD6FaceMaterials() {
+  const faceValues = [4, 3, 2, 5, 1, 6];
+  return faceValues.map((value) => new THREE.MeshStandardMaterial({
+    map: createDiceFaceTexture(value, {
+      background: "#fffdf7",
+      foreground: "#173a3f",
+      border: "#d6d1c5",
+    }),
+    roughness: 0.38,
+    metalness: 0.04,
+  }));
+}
+
+function createDiceFaceTexture(value, { background, foreground, border }) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 14;
+  ctx.strokeRect(8, 8, 240, 240);
+  ctx.fillStyle = foreground;
+  ctx.font = "900 132px Inter, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(String(value), 128, 136);
+  return new THREE.CanvasTexture(canvas);
+}
+
+function setD6ResultRotation(mesh, value) {
+  const rotations = {
+    1: [0, 0, 0],
+    2: [Math.PI / 2, 0, 0],
+    3: [0, Math.PI / 2, 0],
+    4: [0, -Math.PI / 2, 0],
+    5: [-Math.PI / 2, 0, 0],
+    6: [0, Math.PI, 0],
+  };
+  mesh.rotation.set(...(rotations[value] || rotations[1]));
+}
+
+function addPolyhedralFaceLabels(mesh, diceType, geometry) {
+  const normals = getPolyhedralFaceNormals(diceType, geometry);
+  mesh.userData.faceNormals = normals;
+
+  normals.forEach((normal, index) => {
+    const value = index + 1;
+    const label = createDiceFaceLabel(value, diceType);
+    const offset = getPolyhedralLabelOffset(diceType);
+    label.position.copy(normal.clone().multiplyScalar(offset));
+    label.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+    mesh.add(label);
+  });
+}
+
+function createDiceFaceLabel(value, diceType) {
+  const isLightDie = diceType === "d6";
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "900 116px Inter, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = isLightDie ? 14 : 18;
+  ctx.strokeStyle = isLightDie ? "rgba(255, 253, 247, 0.82)" : "rgba(23, 23, 23, 0.5)";
+  ctx.strokeText(String(value), 128, 136);
+  ctx.fillStyle = isLightDie ? "#173a3f" : "#fffdf7";
+  ctx.fillText(String(value), 128, 136);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+  });
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(getPolyhedralLabelSize(diceType), getPolyhedralLabelSize(diceType)), material);
+  label.userData.faceValue = value;
+  return label;
+}
+
+function setPolyhedralResultRotation(mesh, diceType, value) {
+  const normals = mesh.userData.faceNormals || getPolyhedralFaceNormals(diceType, mesh.geometry);
+  const normal = normals[value - 1] || normals[0];
+  const target = threeCamera
+    ? threeCamera.position.clone().normalize()
+    : new THREE.Vector3(0, 0, 1);
+  const quaternion = new THREE.Quaternion().setFromUnitVectors(normal, target);
+  mesh.quaternion.copy(quaternion);
+}
+
+function getPolyhedralLabelOffset(diceType) {
+  if (diceType === "d4") return 0.72;
+  return 1.05;
+}
+
+function getPolyhedralLabelSize(diceType) {
+  if (diceType === "d4") return 0.48;
+  return 0.34;
+}
+
+function getPolyhedralFaceNormals(diceType, geometry) {
+  return getGeometryFaceNormals(geometry);
+}
+
+function getGeometryFaceNormals(geometry) {
+  const normals = [];
+  const position = geometry.getAttribute("position");
+  const index = geometry.getIndex();
+  const triangleCount = index ? index.count / 3 : position.count / 3;
+
+  for (let i = 0; i < triangleCount; i++) {
+    const aIndex = index ? index.getX(i * 3) : i * 3;
+    const bIndex = index ? index.getX(i * 3 + 1) : i * 3 + 1;
+    const cIndex = index ? index.getX(i * 3 + 2) : i * 3 + 2;
+    const a = new THREE.Vector3().fromBufferAttribute(position, aIndex);
+    const b = new THREE.Vector3().fromBufferAttribute(position, bIndex);
+    const c = new THREE.Vector3().fromBufferAttribute(position, cIndex);
+    const center = a.clone().add(b).add(c).divideScalar(3);
+    const normal = new THREE.Vector3()
+      .crossVectors(b.clone().sub(a), c.clone().sub(a))
+      .normalize();
+
+    if (normal.dot(center) < 0) normal.negate();
+    normals.push(normal);
+  }
+
+  return normals;
+}
+
+function getThreeDiceGeometry(diceType) {
+  if (diceType === "d4") return new THREE.TetrahedronGeometry(1.05, 0);
+  if (diceType === "d6") return new THREE.BoxGeometry(1.45, 1.45, 1.45);
+  return new THREE.IcosahedronGeometry(1.12, 0);
+}
+
+function getThreeDiceColor(diceType) {
+  if (diceType === "d4") return 0xb4873e;
+  if (diceType === "d6") return 0xfaf7ec;
+  return 0x375f8e;
+}
+
+function animateDiceRoll(dice, diceType, result, index, callback) {
+  const duration = 600;
+  const startTime = Date.now();
+
+  function animate() {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Rolling animation
+    dice.rotation.x = progress * 10;
+    dice.rotation.y = progress * 10;
+    dice.rotation.z = progress * 5;
+
+    // Add some bounce effect
+    dice.position.y = Math.sin(progress * Math.PI * 2) * 0.5;
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Set final rotation based on result
+      setDiceRotation(dice, diceType, result);
+      callback();
+    }
+  }
+
+  animate();
+}
+
+function setDiceRotation(dice, diceType, result) {
+  // Calculate rotation to show the correct face
+  if (diceType === 'd6') {
+    // Simple rotation mapping for D6
+    const rotations = [
+      { x: 0, y: 0 },           // 1
+      { x: 0, y: Math.PI },     // 6
+      { x: 0, y: Math.PI / 2 },  // 3
+      { x: 0, y: -Math.PI / 2 }, // 4
+      { x: Math.PI / 2, y: 0 },  // 5
+      { x: -Math.PI / 2, y: 0 }  // 2
+    ];
+    const rotation = rotations[result - 1];
+    dice.rotation.x = rotation.x;
+    dice.rotation.y = rotation.y;
+    dice.rotation.z = 0;
+  } else {
+    // For D20, use a simpler rotation
+    const angle = (result - 1) * (Math.PI * 2 / 20);
+    dice.rotation.x = angle;
+    dice.rotation.y = angle;
+    dice.rotation.z = angle;
+  }
+}
+
+// Fallback CSS dice function
+function create3DDiceCSS(diceType, count, callback) {
+  const container = document.getElementById("dice-3d-container");
+
+  // Create a stage element for CSS dice
+  let stage = document.getElementById("dice-3d-stage");
+  if (!stage) {
+    stage = document.createElement("div");
+    stage.id = "dice-3d-stage";
+    stage.className = "dice-3d-stage";
+    container.appendChild(stage);
+  }
+
+  // Clear existing dice
+  stage.innerHTML = '';
+  container.classList.remove("hidden");
+
+  const diceElements = [];
+  const results = [];
+
+  // Create dice elements
+  for (let i = 0; i < count; i++) {
+    const dice = createSingleDice(diceType, i);
+    stage.appendChild(dice);
+    diceElements.push(dice);
+
+    // Generate random result
+    const maxRoll = getStandardDiceSides(diceType);
+    const result = Math.floor(Math.random() * maxRoll) + 1;
+    results.push(result);
+
+    // Start rolling animation
+    dice.classList.add("rolling");
+
+    // Set final rotation for result after animation
+    setTimeout(() => {
+      dice.classList.remove("rolling");
+      setDiceFace(dice, diceType, result);
+
+      // Check if all dice have finished rolling
+      if (i === count - 1) {
+        setTimeout(() => {
+          callback(results);
+        }, 200);
+      }
+    }, 600 + (i * 50)); // 600ms animation with stagger
+  }
+}
+
+function createSingleDice(diceType, index) {
+  const dice = document.createElement("div");
+  dice.className = `dice-3d ${diceType}`;
+  dice.style.animationDelay = `${index * 0.1}s`;
+
+  if (diceType === "d6") {
+    const faces = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+    faces.forEach(faceName => {
+      const face = document.createElement("div");
+      face.className = `face ${faceName}`;
+      dice.appendChild(face);
+    });
+
+    return dice;
+  }
+
+  const polyhedralFaces = ["result", "facet-a", "facet-b", "facet-c", "facet-d", "facet-e", "facet-f"];
+  polyhedralFaces.forEach(faceName => {
+    const face = document.createElement("div");
+    face.className = `face ${faceName}`;
+    if (faceName === "result") face.setAttribute("aria-hidden", "true");
+    dice.appendChild(face);
+  });
+
+  return dice;
+}
+
+function setDiceFace(dice, diceType, value) {
+  // Remove all show classes
+  dice.className = dice.className.replace(/show-\d+/g, '');
+
+  // Add the appropriate show class for the value
+  if (diceType === 'd6') {
+    dice.classList.add(`show-${value}`);
+  } else {
+    const resultFace = dice.querySelector(".face.result");
+    if (resultFace) resultFace.textContent = value;
+    dice.classList.add(`show-1`);
+  }
+}
+
+function onCoinFlipSubmit(e) {
+  e.preventDefault();
+
+  const coinCount = parseInt(document.getElementById("coin-count").value);
+  const container = document.getElementById("coin-3d-container");
+  const stage = document.getElementById("coin-3d-stage");
+
+  // Clear existing coins
+  stage.innerHTML = '';
+  container.classList.remove("hidden");
+
+  const results = [];
+
+  // Create 3D coin elements
+  for (let i = 0; i < coinCount; i++) {
+    const result = Math.random() < 0.5 ? "heads" : "tails";
+    results.push(result);
+
+    const coin = createSingleCoin(i);
+    stage.appendChild(coin);
+
+    // Start flipping animation
+    coin.classList.add("flipping");
+
+    // Set final face for result after animation
+    setTimeout(() => {
+      coin.classList.remove("flipping");
+      setCoinFace(coin, result);
+
+      // Check if all coins have finished flipping
+      if (i === coinCount - 1) {
+        setTimeout(() => {
+          const headsCount = results.filter(r => r === "heads").length;
+          const tailsCount = results.filter(r => r === "tails").length;
+
+          const resultText = `Coin Flip Results: ${headsCount} heads, ${tailsCount} tails`;
+          const resultDetails = results.map((r, i) => `Coin ${i + 1}: ${r}`).join(", ");
+
+          showModal("Coin Flip", resultText, resultDetails);
+
+          // Update history
+          addHistoryEntry("Coin Flip", `${headsCount}H ${tailsCount}T`);
+        }, 200);
+      }
+    }, 600 + (i * 50)); // Animation time with stagger
+  }
+}
+
+function createSingleCoin(index) {
+  const coin = document.createElement("div");
+  coin.className = "coin-3d";
+  coin.style.animationDelay = `${index * 0.1}s`;
+
+  // Create faces
+  const heads = document.createElement("div");
+  heads.className = "face heads";
+  heads.textContent = "H";
+  coin.appendChild(heads);
+
+  const tails = document.createElement("div");
+  tails.className = "face tails";
+  tails.textContent = "T";
+  coin.appendChild(tails);
+
+  return coin;
+}
+
+function setCoinFace(coin, result) {
+  // Remove all show classes
+  coin.className = coin.className.replace(/show-\w+/g, '');
+
+  // Add the appropriate show class for the result
+  coin.classList.add(`show-${result}`);
+}
+
+function ensureRolenrollResultModalBody() {
+  const resultModal = document.getElementById("result-modal");
+  const resultModalBody = resultModal?.querySelector(".result-modal-body");
+  const resultModalTitle = document.getElementById("result-modal-title");
+  if (!resultModalBody) return;
+
+  if (resultModalTitle) resultModalTitle.textContent = "Roll Result";
+  if (resultModalBody.querySelector("#result")) return;
+
+  resultModalBody.innerHTML = `
+    <h3>Result</h3>
+    <div id="result"></div>
+
+    <h3>Summary</h3>
+    <div id="summary">
+      <div><strong>Based score :</strong> <span id="based-score">0</span></div>
+      <div>
+        <strong>R&amp;R :</strong>
+        <span id="rr-count">0</span>
+        (+<span id="rr-points">0</span>)
+      </div>
+      <div>
+        <strong>+ token(s) :</strong> <span id="plus-tokens">0</span>
+        &nbsp;
+        <strong>- token(s) :</strong> <span id="minus-tokens">0</span>
+      </div>
+      <div>
+        <strong>Succeed :</strong> <span id="stat-success">0</span>
+        &nbsp;
+        <strong>Penalty :</strong> <span id="stat-penalty">0</span>
+      </div>
+      <div>
+        <strong>Total point(s) :</strong>
+        <span id="total-points" class="total-highlight">0</span>
+      </div>
+      <div id="equipment-dmg-summary" class="hidden">
+        <strong>Total DMG :</strong>
+        <span id="equipment-total-dmg">0</span>
+      </div>
+    </div>
+  `;
+}
+
+function showStandardDiceResult(result) {
+  const resultModal = document.getElementById("result-modal");
+  const resultModalBody = resultModal?.querySelector(".result-modal-body");
+  const resultModalTitle = document.getElementById("result-modal-title");
+  if (!resultModalBody) return;
+  if (resultModalTitle) resultModalTitle.textContent = "Standard Dice Result";
+
+  resultModalBody.innerHTML = `
+    <div class="standard-dice-result">
+      <p><strong>${result.diceCount}${result.diceType}${result.modifier >= 0 ? '+' : ''}${result.modifier}</strong></p>
+      <p>Rolls: [${result.rolls.join(', ')}]</p>
+      <p>Modifier: ${result.modifier >= 0 ? '+' : ''}${result.modifier}</p>
+      <p><strong>Total: ${result.finalTotal}</strong></p>
+    </div>
+  `;
+
+  openResultModal();
+}
+
+function showCoinFlipResult(result) {
+  const resultModal = document.getElementById("result-modal");
+  const resultModalBody = resultModal?.querySelector(".result-modal-body");
+  const resultModalTitle = document.getElementById("result-modal-title");
+  if (!resultModalBody) return;
+  if (resultModalTitle) resultModalTitle.textContent = "Coin Flip Result";
+
+  resultModalBody.innerHTML = `
+    <div class="coin-flip-result">
+      <p><strong>${result.coinCount} coins flipped</strong></p>
+      <p>Results: [${result.results.join(', ')}]</p>
+      <p>Heads: ${result.heads} | Tails: ${result.tails}</p>
+    </div>
+  `;
+
+  openResultModal();
 }
 
 // ---------- Character sheet: mental hearts ----------

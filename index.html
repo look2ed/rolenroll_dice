@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Role & Roll Interactive Character Sheet</title>
+  <title>Role & Roll Interactive Character Sheet v5.5</title>
+  <link rel="stylesheet" href="style.css?v=5.5.8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZG63L28DHG"></script>
   <script>
@@ -14,7 +17,6 @@
 
     gtag('config', 'G-ZG63L28DHG');
   </script>
-  <link rel="stylesheet" href="style.css?v=5.4.6">
 </head>
 <body>
   <header class="page-header">
@@ -211,7 +213,46 @@
           </button>
         </div>
 
-        <form id="dice-form">
+        <!-- Tab Navigation -->
+        <div class="dice-tabs" role="tablist">
+          <button
+            type="button"
+            id="rolenroll-tab"
+            class="dice-tab active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="rolenroll-content"
+            data-tab="rolenroll"
+          >
+            Role & Roll
+          </button>
+          <button
+            type="button"
+            id="standard-dice-tab"
+            class="dice-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="standard-dice-content"
+            data-tab="standard-dice"
+          >
+            Standard Dice
+          </button>
+          <button
+            type="button"
+            id="coin-flip-tab"
+            class="dice-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="coin-flip-content"
+            data-tab="coin-flip"
+          >
+            Coin Flip
+          </button>
+        </div>
+
+        <!-- Role & Roll Tab Content -->
+        <div id="rolenroll-content" class="dice-tab-content active" role="tabpanel">
+          <form id="dice-form">
           <div class="field">
             <label for="total-dice">Total dice:</label>
             <input id="total-dice" type="number" min="1" value="5" required>
@@ -257,6 +298,56 @@
 
           <button type="submit">Roll</button>
         </form>
+        </div>
+
+        <!-- Standard Dice Tab Content -->
+        <div id="standard-dice-content" class="dice-tab-content" role="tabpanel">
+          <form id="standard-dice-form">
+            <div class="field">
+              <label for="dice-type">Dice Type:</label>
+              <select id="dice-type" required>
+                <option value="d4">d4</option>
+                <option value="d6">d6</option>
+                <option value="d20">d20</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="dice-count">Number of Dice:</label>
+              <input id="dice-count" type="number" min="1" max="20" value="1" required>
+            </div>
+            <div class="field">
+              <label for="dice-modifier">Modifier:</label>
+              <input id="dice-modifier" type="number" value="0" placeholder="+0">
+            </div>
+            <button type="submit">Roll Dice</button>
+          </form>
+
+          <!-- 3D Dice Container -->
+          <div id="dice-3d-container" class="dice-3d-container hidden">
+            <div class="dice-3d-stage" id="dice-3d-stage">
+              <!-- 3D dice will be dynamically added here -->
+            </div>
+            <div class="dice-credit">3D dice rendered with Three.js</div>
+          </div>
+        </div>
+
+        <!-- Coin Flip Tab Content -->
+        <div id="coin-flip-content" class="dice-tab-content" role="tabpanel">
+          <form id="coin-flip-form">
+            <div class="field">
+              <label for="coin-count">Number of Coins:</label>
+              <input id="coin-count" type="number" min="1" max="100" value="1" required>
+            </div>
+            <button type="submit">Flip Coins</button>
+          </form>
+
+          <!-- 3D Coin Container -->
+          <div id="coin-3d-container" class="coin-3d-container hidden">
+            <div class="coin-3d-stage" id="coin-3d-stage">
+              <!-- 3D coins will be dynamically added here -->
+            </div>
+          </div>
+        </div>
 
       <!-- Manual / Guide with TH & EN pages -->
       <div id="manual-guide" class="manual hidden">
@@ -2160,6 +2251,6 @@
     </p>
   </footer>
 
-  <script src="dice.js?v=5.4.6"></script>
+  <script src="dice.js?v=5.5.8"></script>
 </body>
 </html>
